@@ -9,14 +9,12 @@ import java.util.stream.Stream;
 
 public class FileReader {
 
-    public List<String> readFile() {
+    public List<String> readFile(String fileToRead) {
 
         List<String> interactions = new ArrayList<>();
 
-        String fileName = "example/federated-demo/scripts/kangarooInteractions.txt";
-
         //read file into stream, try-with-resources
-        try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+        try (Stream<String> stream = Files.lines(Paths.get(fileToRead))) {
             stream.forEach(line -> interactions.add(line));
         } catch (IOException e) {
             e.printStackTrace();

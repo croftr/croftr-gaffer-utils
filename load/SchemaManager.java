@@ -5,9 +5,6 @@ import uk.gov.gchq.gaffer.proxystore.ProxyStore;
 
 public class SchemaManager {
 
-    public void addSchema(String location) {
-    }
-
     public Graph getExistingGraph(String graphId) {
         Graph graph = new Graph.Builder()
                 .store(new ProxyStore.Builder()
