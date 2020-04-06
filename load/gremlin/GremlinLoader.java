@@ -1,10 +1,6 @@
 package uk.gov.gchq.gaffer.utils.load.gremlin;
 
-import com.google.inject.internal.util.$SourceProvider;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -26,8 +22,29 @@ public class GremlinLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GremlinLoader.class);
 
-    public static void main(String args[]) throws OperationException {
+    private GraphTraversalSource g;
 
+
+    public List<String> shortestPath(Integer nodeId1, Integer nodeId2) {
+        GraphTraversalSource g = loadGraph();
+
+        //find shorest path between nodes
+        List<Path> listResults = new ArrayList();
+        g.V(nodeId1).repeat(out().simplePath()).until(hasId(nodeId2)).path().limit(1).fill(listResults);
+        if (listResults.size() == 0) {
+            g.V(nodeId2).repeat(out().simplePath()).until(hasId(nodeId1)).path().limit(1).fill(listResults);
+        }
+//        listResults.forEach(t -> System.out.println("t " + t.toString() + " " + t.size()));
+
+        List<String> pathIds = new ArrayList<>();
+        listResults.forEach(path -> {
+            path.objects().forEach(i-> pathIds.add( i.toString()));
+        });
+
+        return pathIds;
+    }
+
+    public GraphTraversalSource loadGraph() {
         long startTime = System.currentTimeMillis();
 
         String graphId = "AnimalInteractions";
@@ -56,8 +73,6 @@ public class GremlinLoader {
             vertexMap.put(id, vertex);
         }
 
-
-
         for (String stringEdge : interactions) {
 
             String[] edgeArray = stringEdge.split(delimiter);
@@ -68,23 +83,17 @@ public class GremlinLoader {
             fromVertex.addEdge("interaction", toVertex);
         }
 
-//        g.V().toSet().forEach(v -> System.out.println("got vertex "+ v.id()) );
-
-//        List<Vertex> listResults = new ArrayList();
-//        g.V().fill(listResults);
-//        listResults.forEach(t -> System.out.println("t " + t.id() + " " + t.label()));
-
-
-
-
-        //find shorest path between nodes
-        List<Path> listResults = new ArrayList();
-        g.V(61).repeat(out().simplePath()).until(hasId(7)).path().limit(1).fill(listResults);
-//        g.V(61).repeat(out().simplePath()).until(hasId(40)).path().limit(1).fill(listResults);
-        listResults.forEach(t -> System.out.println("t " + t.toString() + " " + t.size()));
-
         long endTime = System.currentTimeMillis();
         LOGGER.info("Loaded {} interactions in {} seconds", interactions.size(), (endTime - startTime / 1000));
 
+        return g;
+    }
+
+    public static void main(String args[]) throws OperationException {
+        GremlinLoader gremlinLoader = new GremlinLoader();
+        gremlinLoader.loadGraph();
+//        List<String> paths = gremlinLoader.shortestPath(61, 7);
+        List<String> paths = gremlinLoader.shortestPath(31, 26);
+        System.out.println("path ids  " + paths);
     }
 }
