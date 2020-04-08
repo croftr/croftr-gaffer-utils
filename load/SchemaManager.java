@@ -7,6 +7,7 @@ import uk.gov.gchq.gaffer.graph.Graph;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.proxystore.ProxyStore;
 import uk.gov.gchq.gaffer.store.schema.Schema;
+import uk.gov.gchq.gaffer.store.schema.SchemaEdgeDefinition;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
 import uk.gov.gchq.gaffer.user.User;
 import uk.gov.gchq.gaffer.utils.upload.UserEdge;
@@ -37,10 +38,16 @@ public class SchemaManager {
 
     public Schema createSchema() throws SerialisationException {
 
-        Map<String, UserEdge> edges = new HashMap<>();
-        UserEdge userEdge = new UserEdge("An edge from one node to another", "cat", "dog", false);
-        edges.put("testEdge", userEdge);
+        Map<String, SchemaEdgeDefinition> edges = new HashMap<>();
 
+        SchemaEdgeDefinition.Builder builder = new SchemaEdgeDefinition.Builder();
+        builder.destination("node");
+        builder.source("node");
+        builder.description("A test edge");
+
+        SchemaEdgeDefinition schemaEdgeDefinition = builder.build();
+
+        edges.put("testEdge", schemaEdgeDefinition);
 
         //TODO DEFINE NODE TYPES
 //        TypeSubTypeValue vertex1 = new TypeSubTypeValue();
@@ -60,7 +67,7 @@ public class SchemaManager {
 
 
         Map<String, Entity> entities = new HashMap<>();
-        UserSchema userSchema = new UserSchema(edges, entities);
+        UserSchema userSchema = new UserSchema(edges);
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);
         System.out.println(new String(jsonBytes));
         Schema schema = Schema.fromJson(jsonBytes);

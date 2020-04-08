@@ -2,35 +2,26 @@ package uk.gov.gchq.gaffer.utils.upload;
 
 import uk.gov.gchq.gaffer.data.element.Edge;
 import uk.gov.gchq.gaffer.data.element.Entity;
+import uk.gov.gchq.gaffer.store.schema.SchemaEdgeDefinition;
 
 import java.util.Map;
 
 public class UserSchema {
 
-    private Map<String, UserEdge> edges;
-    private Map<String, Entity> entities;
+    private Map<String, SchemaEdgeDefinition> edges;
 
-    public UserSchema(Map<String, UserEdge> edges, Map<String, Entity> entities) {
+    public UserSchema(Map<String, SchemaEdgeDefinition> edges) {
         this.edges = edges;
-        this.entities = entities;
     }
 
     public UserSchema() {
     }
 
-    public Map<String, UserEdge> getEdges() {
+    public Map<String, SchemaEdgeDefinition> getEdges() {
         return edges;
     }
 
-    public void setEdges(Map<String, UserEdge> edges) {
+    public void setEdges(Map<String, SchemaEdgeDefinition> edges) {
         this.edges = edges;
-    }
-
-    public Map<String, Entity> getEntities() {
-        return entities;
-    }
-
-    public void setEntities(Map<String, Entity> entities) {
-        this.entities = entities;
     }
 }
