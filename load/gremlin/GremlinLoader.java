@@ -5,12 +5,21 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.IoCore;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.operation.OperationException;
 import uk.gov.gchq.gaffer.utils.load.FileReader;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
@@ -32,7 +41,7 @@ public class GremlinLoader {
         List<Path> listResults = new ArrayList();
         g.V(nodeId1).repeat(out().simplePath()).until(hasId(nodeId2)).path().limit(1).fill(listResults);
         if (listResults.size() == 0) {
-            g.V(nodeId2).repeat(out().simplePath()).until(hasId(nodeId1)).path().limit(1).fill(listResults);
+            g.V(nodeId2).repeat(both().simplePath()).until(hasId(nodeId1)).path().limit(1).fill(listResults);
         }
 //        listResults.forEach(t -> System.out.println("t " + t.toString() + " " + t.size()));
 
@@ -86,6 +95,29 @@ public class GremlinLoader {
         long endTime = System.currentTimeMillis();
         LOGGER.info("Loaded {} interactions in {} seconds", interactions.size(), (endTime - startTime / 1000));
 
+
+        try {
+
+            GraphSONWriter graphSONWriter = GraphSONWriter.build().create();
+            final OutputStream os = new FileOutputStream("tinkerpop-modern.json");
+            graphSONWriter.writeGraph(os,graph);
+
+
+            GraphSONReader graphSONReader = GraphSONReader.build().create();
+
+
+
+
+//            final GraphWriter writer = (GraphWriter) graph..graphson()).writer();
+//            final OutputStream os = new FileOutputStream("tinkerpop-modern.json");
+//            writer.writeGraph(os, graph);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         return g;
     }
 
@@ -93,7 +125,7 @@ public class GremlinLoader {
         GremlinLoader gremlinLoader = new GremlinLoader();
         gremlinLoader.loadGraph();
 //        List<String> paths = gremlinLoader.shortestPath(61, 7);
-        List<String> paths = gremlinLoader.shortestPath(31, 26);
+        List<String> paths = gremlinLoader.shortestPath(36, 61);
         System.out.println("path ids  " + paths);
     }
 }
