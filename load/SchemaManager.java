@@ -35,43 +35,4 @@ public class SchemaManager {
 
         return graph;
     }
-
-    public Schema createSchema() throws SerialisationException {
-
-        Map<String, SchemaEdgeDefinition> edges = new HashMap<>();
-
-        SchemaEdgeDefinition.Builder builder = new SchemaEdgeDefinition.Builder();
-        builder.destination("node");
-        builder.source("node");
-        builder.description("A test edge");
-
-        SchemaEdgeDefinition schemaEdgeDefinition = builder.build();
-
-        edges.put("testEdge", schemaEdgeDefinition);
-
-        //TODO DEFINE NODE TYPES
-//        TypeSubTypeValue vertex1 = new TypeSubTypeValue();
-//        vertex1.setType("animal");
-//        vertex1.setSubType("species");
-//        vertex1.setValue("cat");
-//
-//        TypeSubTypeValue vertex2 = new TypeSubTypeValue();
-//        vertex2.setType("animal");
-//        vertex2.setSubType("species");
-//        vertex2.setValue("dog");
-//
-//        Edge edge = new Edge.Builder()
-//                .group("testEdge")
-//                .source(vertex1).dest(vertex2)
-//                .build();
-
-
-        Map<String, Entity> entities = new HashMap<>();
-        UserSchema userSchema = new UserSchema(edges);
-        byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);
-        System.out.println(new String(jsonBytes));
-        Schema schema = Schema.fromJson(jsonBytes);
-        System.out.println(schema);
-        return schema;
-    }
 }
