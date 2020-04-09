@@ -3,9 +3,7 @@ package uk.gov.gchq.gaffer.utils.upload;
 import uk.gov.gchq.gaffer.data.element.Entity;
 import uk.gov.gchq.gaffer.exception.SerialisationException;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
-import uk.gov.gchq.gaffer.store.schema.Schema;
-import uk.gov.gchq.gaffer.store.schema.SchemaEdgeDefinition;
-import uk.gov.gchq.gaffer.store.schema.SchemaEntityDefinition;
+import uk.gov.gchq.gaffer.store.schema.*;
 import uk.gov.gchq.koryphe.ValidationResult;
 
 import java.util.HashMap;
@@ -15,24 +13,9 @@ public class SchemaFactory {
 
     private Schema schema;
 
-    //TODO DEFINE NODE TYPES
-//        TypeSubTypeValue vertex1 = new TypeSubTypeValue();
-//        vertex1.setType("animal");
-//        vertex1.setSubType("species");
-//        vertex1.setValue("cat");
-//
-//        TypeSubTypeValue vertex2 = new TypeSubTypeValue();
-//        vertex2.setType("animal");
-//        vertex2.setSubType("species");
-//        vertex2.setValue("dog");
-//
-//        Edge edge = new Edge.Builder()
-//                .group("testEdge")
-//                .source(vertex1).dest(vertex2)
-//                .build();
-
     public SchemaEdgeDefinition createSchemaEdge(String source, String destination, String description) {
         SchemaEdgeDefinition.Builder builder = new SchemaEdgeDefinition.Builder();
+
 
         builder.source(source);
         builder.destination(destination);
@@ -41,13 +24,12 @@ public class SchemaFactory {
         SchemaEdgeDefinition schemaEdgeDefinition = builder.build();
 
         return schemaEdgeDefinition;
-
     }
 
     private SchemaEntityDefinition createSchemaEntity() {
         SchemaEntityDefinition.Builder builder = new SchemaEntityDefinition.Builder();
 
-        builder.vertex("");
+        builder.vertex("node");
         builder.property("weight", "count");
 
         SchemaEntityDefinition schemaEntityDefinition = builder.build();
@@ -55,14 +37,23 @@ public class SchemaFactory {
         return schemaEntityDefinition;
     }
 
+    private TypeDefinition createSchemaType(Class<?> clazz) {
+        TypeDefinition.Builder builder = new TypeDefinition.Builder();
+
+        TypeDefinition typeDefinition = builder.build();
+        typeDefinition.setClazz(clazz);
+
+        return typeDefinition;
+    }
+
     boolean isValid(Schema schema) {
         ValidationResult validationResult =  schema.validate();
         return validationResult.isValid();
     }
 
-
     public Schema createSchema() throws SerialisationException {
 
+        Map<String, TypeDefinition> types = new HashMap<>();
         Map<String, SchemaEdgeDefinition> edges = new HashMap<>();
         Map<String, SchemaEntityDefinition> entities = new HashMap<>();
 
@@ -72,7 +63,13 @@ public class SchemaFactory {
         SchemaEntityDefinition schemaEntityDefinition = createSchemaEntity();
         entities.put("nodeStats", schemaEntityDefinition);
 
-        UserSchema userSchema = new UserSchema(edges, entities);
+        TypeDefinition vertexType = createSchemaType(String.class);
+        types.put("node", vertexType);
+
+        TypeDefinition weightType = createSchemaType(Integer.class);
+        types.put("count", weightType);
+
+        UserSchema userSchema = new UserSchema(edges, entities, types);
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);
 //        System.out.println(new String(jsonBytes));
         schema = Schema.fromJson(jsonBytes);
