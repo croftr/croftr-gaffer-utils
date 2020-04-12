@@ -1,10 +1,13 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import uk.gov.gchq.gaffer.data.element.Entity;
 import uk.gov.gchq.gaffer.exception.SerialisationException;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.store.schema.*;
 import uk.gov.gchq.koryphe.ValidationResult;
+import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
+import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +43,16 @@ public class SchemaFactory {
     private TypeDefinition createSchemaType(Class<?> clazz) {
         TypeDefinition.Builder builder = new TypeDefinition.Builder();
 
+        if (clazz.equals(String.class)) {
+            builder.aggregateFunction(new StringConcat());
+        } else {
+            builder.aggregateFunction(new Sum());
+        }
+
         TypeDefinition typeDefinition = builder.build();
         typeDefinition.setClazz(clazz);
+
+
 
         return typeDefinition;
     }
@@ -74,7 +85,7 @@ public class SchemaFactory {
 //        System.out.println(new String(jsonBytes));
         schema = Schema.fromJson(jsonBytes);
 
-        System.out.println(schema);
+//        System.out.println(schema.getVisibilityProperty());
 
         return schema;
     }
