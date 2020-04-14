@@ -1,10 +1,9 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import uk.gov.gchq.gaffer.data.element.Entity;
 import uk.gov.gchq.gaffer.exception.SerialisationException;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.store.schema.*;
+import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
 import uk.gov.gchq.koryphe.ValidationResult;
 import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
 import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
@@ -45,21 +44,16 @@ public class SchemaFactory {
 
         if (clazz.equals(String.class)) {
             builder.aggregateFunction(new StringConcat());
-        } else {
+        } else if (clazz.equals(Integer.class)) {
             builder.aggregateFunction(new Sum());
+        } else if (clazz.equals(TypeSubTypeValue.class)) {
+            //no agg function needed for these
         }
 
         TypeDefinition typeDefinition = builder.build();
         typeDefinition.setClazz(clazz);
 
-
-
         return typeDefinition;
-    }
-
-    boolean isValid(Schema schema) {
-        ValidationResult validationResult =  schema.validate();
-        return validationResult.isValid();
     }
 
     public Schema createSchema() throws SerialisationException {
@@ -69,12 +63,12 @@ public class SchemaFactory {
         Map<String, SchemaEntityDefinition> entities = new HashMap<>();
 
         SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", "A test edge");
-        edges.put("testEdge", schemaEdgeDefinition);
+        edges.put("interaction", schemaEdgeDefinition);
 
         SchemaEntityDefinition schemaEntityDefinition = createSchemaEntity();
         entities.put("nodeStats", schemaEntityDefinition);
 
-        TypeDefinition vertexType = createSchemaType(String.class);
+        TypeDefinition vertexType = createSchemaType(TypeSubTypeValue.class);
         types.put("node", vertexType);
 
         TypeDefinition weightType = createSchemaType(Integer.class);
@@ -84,8 +78,6 @@ public class SchemaFactory {
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);
 //        System.out.println(new String(jsonBytes));
         schema = Schema.fromJson(jsonBytes);
-
-//        System.out.println(schema.getVisibilityProperty());
 
         return schema;
     }

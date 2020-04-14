@@ -34,12 +34,22 @@ public class QuickStartElementFactory implements SchemaElementFactrory {
                     continue;
                 }
 
-                String nodeA = edgeArray[FROM_NODE];
-                String nodeB = edgeArray[TO_NODE];
+                TypeSubTypeValue vertex1 = new TypeSubTypeValue();
+                vertex1.setType(null);
+                vertex1.setSubType(null);
+                vertex1.setValue(edgeArray[FROM_NODE]);
+
+                TypeSubTypeValue vertex2 = new TypeSubTypeValue();
+                vertex2.setType(null);
+                vertex2.setSubType(null);
+                vertex2.setValue(edgeArray[TO_NODE]);
+
+//                String nodeA = edgeArray[FROM_NODE];
+//                String nodeB = edgeArray[TO_NODE];
 
                 Edge edge = new Edge.Builder()
                         .group(edgeArray[EDGE_TYPE])
-                        .source(nodeA).dest(nodeB).directed(true)
+                        .source(vertex1).dest(vertex2).directed(true)
                         .build();
 
                 edges.add(edge);

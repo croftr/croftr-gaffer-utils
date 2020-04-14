@@ -1,6 +1,8 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
 import com.google.inject.internal.util.$SourceProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.utils.load.gremlin.GremlinLoader;
 
@@ -20,52 +22,25 @@ import java.util.List;
         maxRequestSize = 1024 * 1024 * 5 * 5)
 public class LoadCsvResource extends HttpServlet {
 
-    private String message;
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoadCsvResource.class);
+
+    private SchemaService schemaService;
 
     public void init() throws ServletException {
-        // Do required initialization
-        message = "Hello World";
-    }
-
-    private String getFileName(Part part) {
-        for (String content : part.getHeader("content-disposition").split(";")) {
-            if (content.trim().startsWith("filename"))
-                return content.substring(content.indexOf("=") + 2, content.length() - 1);
-        }
-        return "default.csv";
+        schemaService = new SchemaService();
     }
 
     //    http://localhost:8080/rest/shortestPath?node1=61&node2=7
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        System.out.println("GOT REQUEST " + request.getContentType());
+        LOGGER.info("Received request to create schema from file");
 
-        String fileName = null;
-
-        for (Part part : request.getParts()) {
-            fileName = getFileName(part);
-            System.out.println("got file name " + fileName);
-            InputStream inputStream  = part.getInputStream();
-            //creating an InputStreamReader object
-            InputStreamReader isReader = new InputStreamReader(inputStream);
-            //Creating a BufferedReader object
-            BufferedReader reader = new BufferedReader(isReader);
-            StringBuffer sb = new StringBuffer();
-            String str;
-            while((str = reader.readLine())!= null){
-                sb.append(str);
-            }
-            System.out.println("READ -----------------------------------------------------------");
-            System.out.println(sb.toString());
-
-        }
+        schemaService.createSchemaFromData(request.getParts());
 
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
-
-        byte[] jsonBytes = JSONSerialiser.serialise(new LoadCsvResponse("Successfully Loaded your data from " + fileName), true);
-
+        byte[] jsonBytes = JSONSerialiser.serialise(new LoadCsvResponse("Successfully Loaded your data "), true);
         out.println(new String(jsonBytes));
     }
 

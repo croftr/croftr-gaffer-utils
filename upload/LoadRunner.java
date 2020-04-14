@@ -51,7 +51,7 @@ public class LoadRunner {
             List<String> edges = new FileReader().readFile(loadInput.getGraphData());
             List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(edges, loadInput.getEdgeType(), loadInput.getDelimter());
 
-            AddElements addElements = new OperationsManager().addElements(elements, graph.getGraphId());
+            AddElements addElements = new OperationsManager().addElements(elements, "testGraph");
 
             graph.execute(addElements, new User());
 
