@@ -62,7 +62,7 @@ public class OperationExecuter {
     public Schema getSchema(String graphId) throws OperationException {
 
         GetSchema getSchema = new GetSchema.Builder()
-                .option("gaffer.federatedstore.operation.graphIds", graphId)
+                .option(FederatedStoreConstants.KEY_OPERATION_OPTIONS_GRAPH_IDS, graphId)
                 .build();
 
         printOperation(getSchema);
