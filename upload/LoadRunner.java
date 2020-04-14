@@ -22,6 +22,8 @@ import java.util.Set;
 
 public class LoadRunner {
 
+    private static final String GRAPH_ID = "testGraph";
+
     public static void main(String[] args) {
         SchemaFactory schemaFactory = new SchemaFactory();
         try {
@@ -40,7 +42,7 @@ public class LoadRunner {
             storeProperties.setStoreClass(MockAccumuloStore.class);
 
             AddGraph publicGraph = new AddGraph.Builder()
-                    .graphId("testGraph")
+                    .graphId(GRAPH_ID)
                     .schema(schema)
                     .isPublic(true)
                     .storeProperties(storeProperties)
@@ -55,7 +57,7 @@ public class LoadRunner {
             List<String> edges = new FileReader().readFile(loadInput.getGraphData());
             List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(edges, loadInput.getEdgeType(), loadInput.getDelimter());
 
-            AddElements addElements = new OperationsManager().addElements(elements, "testGraph");
+            AddElements addElements = new OperationsManager().addElements(elements, GRAPH_ID);
 
             graph.execute(addElements, new User());
 

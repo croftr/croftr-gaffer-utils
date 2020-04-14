@@ -1,4 +1,4 @@
-package uk.gov.gchq.gaffer.utils.upload;
+package uk.gov.gchq.gaffer.utils.upload.domain;
 
 import uk.gov.gchq.gaffer.store.schema.SchemaEdgeDefinition;
 import uk.gov.gchq.gaffer.store.schema.SchemaEntityDefinition;

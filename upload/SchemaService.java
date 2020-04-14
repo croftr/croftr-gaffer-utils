@@ -12,11 +12,13 @@ import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.operation.OperationException;
 import uk.gov.gchq.gaffer.operation.impl.add.AddElements;
 import uk.gov.gchq.gaffer.store.StoreProperties;
+import uk.gov.gchq.gaffer.store.operation.GetSchema;
 import uk.gov.gchq.gaffer.store.schema.Schema;
 import uk.gov.gchq.gaffer.user.User;
 import uk.gov.gchq.gaffer.utils.load.FileReader;
 import uk.gov.gchq.gaffer.utils.load.LoadInput;
 import uk.gov.gchq.gaffer.utils.load.OperationsManager;
+import uk.gov.gchq.gaffer.utils.upload.domain.GraphData;
 import uk.gov.gchq.koryphe.ValidationResult;
 
 import javax.servlet.http.Part;
@@ -31,14 +33,19 @@ public class SchemaService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaService.class);
 
     private String getFileName(Part part) {
-        for (String content : part.getHeader("content-disposition").split(";")) {
-            if (content.trim().startsWith("filename"))
-                return content.substring(content.indexOf("=") + 2, content.length() - 1);
+        String contentDisposition = part.getHeader("content-disposition");
+
+        if (contentDisposition != null) {
+            for (String content : contentDisposition.split(";")) {
+                if (content.trim().startsWith("filename"))
+                    return content.substring(content.indexOf("=") + 2, content.length() - 1);
+            }
         }
+
         return "default.csv";
     }
 
-    public void createSchemaFromData (Collection<Part> parts) throws IOException {
+    GraphData convertGraphData(Collection<Part> parts) throws IOException {
 
         String fileName = null;
         List<String> edges = new ArrayList<>();
@@ -48,67 +55,78 @@ public class SchemaService {
 
             fileName = getFileName(part);
 
-            InputStream inputStream  = part.getInputStream();
+            InputStream inputStream = part.getInputStream();
             //creating an InputStreamReader object
             InputStreamReader isReader = new InputStreamReader(inputStream);
             //Creating a BufferedReader object
             BufferedReader reader = new BufferedReader(isReader);
-//            StringBuilder  sb = new StringBuilder();
+
             String str;
-            while((str = reader.readLine())!= null){
+            while ((str = reader.readLine()) != null) {
                 System.out.println("append>>>> " + str);
                 String edgeType = str.split(",")[1];
 
                 edgeTypes.add(edgeType);
                 edges.add(str);
-//                sb.append(str);
+
             }
-//            System.out.println("READ -----------------------------------------------------------");
-//            System.out.println(sb.toString());
         }
 
+        return new GraphData(fileName, edges, edgeTypes);
+
+    }
+
+    public Schema createSchemaFromData(Collection<Part> parts, String graphId) throws IOException, OperationException {
+
+        GraphData graphData = convertGraphData(parts);
 
         SchemaFactory schemaFactory = new SchemaFactory();
-        try {
 
-            Schema schema = schemaFactory.createSchema(edgeTypes);
-            ValidationResult s = schema.validate();
-            System.out.println(s.isValid());
+        Schema schema = schemaFactory.createSchema(graphData.getEdgeTypes());
+        ValidationResult s = schema.validate();
+        System.out.println(s.isValid());
 
-            GraphManager graphManager = new GraphManager();
-            Graph graph = graphManager.getExistingGraph();
+        GraphManager graphManager = new GraphManager();
+        Graph graph = graphManager.getExistingGraph();
 
-            StoreProperties storeProperties = new StoreProperties();
-            storeProperties.setStoreClass(MockAccumuloStore.class);
+        StoreProperties storeProperties = new StoreProperties();
+        storeProperties.setStoreClass(MockAccumuloStore.class);
 
-            AddGraph publicGraph = new AddGraph.Builder()
-                    .graphId("testGraph")
-                    .schema(schema)
-                    .isPublic(true)
-                    .storeProperties(storeProperties)
-                    .build();
+        AddGraph publicGraph = new AddGraph.Builder()
+                .graphId(graphId)
+                .schema(schema)
+                .isPublic(true)
+                .storeProperties(storeProperties)
+                .build();
 
-            byte[] jsonBytes = JSONSerialiser.serialise(publicGraph, true);
-            System.out.println(new String(jsonBytes));
+        byte[] jsonBytes = JSONSerialiser.serialise(publicGraph, true);
+        System.out.println(new String(jsonBytes));
 
-            graph.execute(publicGraph, new User());
+        graph.execute(publicGraph, new User());
 
-            LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
+        LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
 
-            List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(edges, loadInput.getEdgeType(), loadInput.getDelimter());
+        List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(graphData.getEdges(), loadInput.getEdgeType(), loadInput.getDelimter());
 
-            AddElements addElements = new OperationsManager().addElements(elements, publicGraph.getGraphId());
+        AddElements addElements = new OperationsManager().addElements(elements, publicGraph.getGraphId());
 
-            byte[] jsonBytes1 = JSONSerialiser.serialise(addElements, true);
-            System.out.println(new String(jsonBytes1));
+        byte[] jsonBytes1 = JSONSerialiser.serialise(addElements, true);
+        System.out.println(new String(jsonBytes1));
 
-            graph.execute(addElements, new User());
+        graph.execute(addElements, new User());
 
-        } catch (SerialisationException | OperationException e) {
-            e.printStackTrace();
-        }
+        LOGGER.info("Successfully create schama from file {}", graphData.getFileName());
 
-        LOGGER.info("Successfully create schama from file {}", fileName);
+        GetSchema getSchema = new GetSchema.Builder()
+                 .option("gaffer.federatedstore.operation.graphIds", graphId)
+                 .build();
+
+        byte[] jsonBytes2 = JSONSerialiser.serialise(getSchema, true);
+        System.out.println(new String(jsonBytes2));
+
+        Schema createdSchema = graph.execute(getSchema, new User());
+
+        return createdSchema;
 
     }
 }

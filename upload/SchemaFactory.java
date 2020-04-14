@@ -4,6 +4,7 @@ import uk.gov.gchq.gaffer.exception.SerialisationException;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.store.schema.*;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
+import uk.gov.gchq.gaffer.utils.upload.domain.UserSchema;
 import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
 import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
 

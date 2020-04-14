@@ -4,6 +4,7 @@ import com.google.inject.internal.util.$SourceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
+import uk.gov.gchq.gaffer.operation.OperationException;
 import uk.gov.gchq.gaffer.utils.load.gremlin.GremlinLoader;
 
 import javax.servlet.ServletContext;
@@ -36,7 +37,11 @@ public class LoadCsvResource extends HttpServlet {
 
         LOGGER.info("Received request to create schema from file");
 
-        schemaService.createSchemaFromData(request.getParts());
+        try {
+            schemaService.createSchemaFromData(request.getParts(), "testGraph");
+        } catch (OperationException e) {
+            e.printStackTrace();
+        }
 
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();

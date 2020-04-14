@@ -2,9 +2,6 @@ package uk.gov.gchq.gaffer.utils.upload;
 
 import uk.gov.gchq.gaffer.graph.Graph;
 import uk.gov.gchq.gaffer.proxystore.ProxyStore;
-import uk.gov.gchq.gaffer.store.schema.Schema;
-
-import java.util.Properties;
 
 public class GraphManager {
 
