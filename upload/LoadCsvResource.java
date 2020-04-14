@@ -35,11 +35,11 @@ public class LoadCsvResource extends HttpServlet {
     //    http://localhost:8080/rest/shortestPath?node1=61&node2=7
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        LOGGER.info("Received request to create schema from file");
+        String schemaName = request.getParameter("name");
+        LOGGER.info("Received request to create schema {} ", schemaName);
         Schema schema = null;
         try {
-            schema = schemaService.createSchemaFromData(request.getParts(), "testGraph");
+            schema = schemaService.createSchemaFromData(request.getParts(), schemaName);
         } catch (OperationException e) {
             e.printStackTrace();
         }
