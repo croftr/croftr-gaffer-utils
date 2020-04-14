@@ -10,8 +10,6 @@ public class OperationsManager {
 
     public AddElements addElements(List<Element> elements, String graphId) {
 
-        System.out.println("check me out !!!! " + graphId);
-
         AddElements addElements = new AddElements.Builder()
                 .option(FederatedStoreConstants.KEY_OPERATION_OPTIONS_GRAPH_IDS, graphId)
                 .skipInvalidElements(false)

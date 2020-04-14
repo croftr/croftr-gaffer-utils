@@ -24,9 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class SchemaService {
 
@@ -44,6 +42,7 @@ public class SchemaService {
 
         String fileName = null;
         List<String> edges = new ArrayList<>();
+        Set<String> edgeTypes = new HashSet<>();
 
         for (Part part : parts) {
 
@@ -58,6 +57,9 @@ public class SchemaService {
             String str;
             while((str = reader.readLine())!= null){
                 System.out.println("append>>>> " + str);
+                String edgeType = str.split(",")[1];
+
+                edgeTypes.add(edgeType);
                 edges.add(str);
 //                sb.append(str);
             }
@@ -69,8 +71,7 @@ public class SchemaService {
         SchemaFactory schemaFactory = new SchemaFactory();
         try {
 
-
-            Schema schema = schemaFactory.createSchema();
+            Schema schema = schemaFactory.createSchema(edgeTypes);
             ValidationResult s = schema.validate();
             System.out.println(s.isValid());
 
@@ -93,12 +94,8 @@ public class SchemaService {
             graph.execute(publicGraph, new User());
 
             LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
-//            List<String> edges = new FileReader().readFile(loadInput.getGraphData());
 
             List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(edges, loadInput.getEdgeType(), loadInput.getDelimter());
-
-            System.out.println("created elements " + elements);
-            System.out.println("created elements for graph " + graph.getGraphId());
 
             AddElements addElements = new OperationsManager().addElements(elements, publicGraph.getGraphId());
 

@@ -16,7 +16,9 @@ import uk.gov.gchq.gaffer.utils.load.LoadInput;
 import uk.gov.gchq.gaffer.utils.load.OperationsManager;
 import uk.gov.gchq.koryphe.ValidationResult;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class LoadRunner {
 
@@ -24,8 +26,10 @@ public class LoadRunner {
         SchemaFactory schemaFactory = new SchemaFactory();
         try {
 
+            Set<String> edgeTypes = new HashSet<>();
+            edgeTypes.add("interaction");
 
-            Schema schema = schemaFactory.createSchema();
+            Schema schema = schemaFactory.createSchema(edgeTypes);
             ValidationResult s = schema.validate();
             System.out.println(s.isValid());
 

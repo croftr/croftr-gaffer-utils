@@ -4,12 +4,12 @@ import uk.gov.gchq.gaffer.exception.SerialisationException;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.store.schema.*;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
-import uk.gov.gchq.koryphe.ValidationResult;
 import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
 import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class SchemaFactory {
 
@@ -56,14 +56,16 @@ public class SchemaFactory {
         return typeDefinition;
     }
 
-    public Schema createSchema() throws SerialisationException {
+    public Schema createSchema(Set<String> edgeTypes) throws SerialisationException {
 
         Map<String, TypeDefinition> types = new HashMap<>();
         Map<String, SchemaEdgeDefinition> edges = new HashMap<>();
         Map<String, SchemaEntityDefinition> entities = new HashMap<>();
 
-        SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", "A test edge");
-        edges.put("interaction", schemaEdgeDefinition);
+        edgeTypes.forEach(edgeType -> {
+            SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", "A test edge");
+            edges.put(edgeType, schemaEdgeDefinition);
+        });
 
         SchemaEntityDefinition schemaEntityDefinition = createSchemaEntity();
         entities.put("nodeStats", schemaEntityDefinition);
