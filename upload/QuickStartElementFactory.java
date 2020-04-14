@@ -44,9 +44,6 @@ public class QuickStartElementFactory implements SchemaElementFactrory {
                 vertex2.setSubType(null);
                 vertex2.setValue(edgeArray[TO_NODE]);
 
-//                String nodeA = edgeArray[FROM_NODE];
-//                String nodeB = edgeArray[TO_NODE];
-
                 Edge edge = new Edge.Builder()
                         .group(edgeArray[EDGE_TYPE])
                         .source(vertex1).dest(vertex2).directed(true)

@@ -50,14 +50,14 @@ public class LoadCsvResource extends HttpServlet {
         out.println(new String(jsonBytes));
     }
 
-    //for Preflight
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        System.out.println("OPTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        setAccessControlHeaders(resp);
-        resp.setStatus(HttpServletResponse.SC_OK);
-    }
+//    //for Preflight
+//    @Override
+//    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
+//            throws ServletException, IOException {
+//        System.out.println("OPTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+//        setAccessControlHeaders(resp);
+//        resp.setStatus(HttpServletResponse.SC_OK);
+//    }
 
     private void setAccessControlHeaders(HttpServletResponse resp) {
         resp.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");

@@ -1,25 +1,13 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
-import com.google.inject.internal.util.$SourceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.gchq.gaffer.accumulostore.MockAccumuloStore;
 import uk.gov.gchq.gaffer.data.element.Element;
-import uk.gov.gchq.gaffer.exception.SerialisationException;
-import uk.gov.gchq.gaffer.federatedstore.operation.AddGraph;
 import uk.gov.gchq.gaffer.graph.Graph;
-import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.operation.OperationException;
-import uk.gov.gchq.gaffer.operation.impl.add.AddElements;
-import uk.gov.gchq.gaffer.store.StoreProperties;
-import uk.gov.gchq.gaffer.store.operation.GetSchema;
 import uk.gov.gchq.gaffer.store.schema.Schema;
-import uk.gov.gchq.gaffer.user.User;
-import uk.gov.gchq.gaffer.utils.load.FileReader;
 import uk.gov.gchq.gaffer.utils.load.LoadInput;
-import uk.gov.gchq.gaffer.utils.load.OperationsManager;
 import uk.gov.gchq.gaffer.utils.upload.domain.GraphData;
-import uk.gov.gchq.koryphe.ValidationResult;
 
 import javax.servlet.http.Part;
 import java.io.BufferedReader;
@@ -31,6 +19,16 @@ import java.util.*;
 public class SchemaService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaService.class);
+
+    private SchemaFactory schemaFactory;
+    private OperationExecuter operationExecuter;
+
+    public SchemaService() {
+        schemaFactory = new SchemaFactory();
+        GraphManager graphManager = new GraphManager();
+        Graph graph = graphManager.getExistingGraph();
+        operationExecuter = new OperationExecuter(graph);
+    }
 
     private String getFileName(Part part) {
         String contentDisposition = part.getHeader("content-disposition");
@@ -45,7 +43,7 @@ public class SchemaService {
         return "default.csv";
     }
 
-    GraphData convertGraphData(Collection<Part> parts) throws IOException {
+    private GraphData convertGraphData(Collection<Part> parts) throws IOException {
 
         String fileName = null;
         List<String> edges = new ArrayList<>();
@@ -63,12 +61,9 @@ public class SchemaService {
 
             String str;
             while ((str = reader.readLine()) != null) {
-                System.out.println("append>>>> " + str);
                 String edgeType = str.split(",")[1];
-
                 edgeTypes.add(edgeType);
                 edges.add(str);
-
             }
         }
 
@@ -80,51 +75,19 @@ public class SchemaService {
 
         GraphData graphData = convertGraphData(parts);
 
-        SchemaFactory schemaFactory = new SchemaFactory();
-
         Schema schema = schemaFactory.createSchema(graphData.getEdgeTypes());
-        ValidationResult s = schema.validate();
-        System.out.println(s.isValid());
 
-        GraphManager graphManager = new GraphManager();
-        Graph graph = graphManager.getExistingGraph();
-
-        StoreProperties storeProperties = new StoreProperties();
-        storeProperties.setStoreClass(MockAccumuloStore.class);
-
-        AddGraph publicGraph = new AddGraph.Builder()
-                .graphId(graphId)
-                .schema(schema)
-                .isPublic(true)
-                .storeProperties(storeProperties)
-                .build();
-
-        byte[] jsonBytes = JSONSerialiser.serialise(publicGraph, true);
-        System.out.println(new String(jsonBytes));
-
-        graph.execute(publicGraph, new User());
+        operationExecuter.addGraph(graphId, schema);
 
         LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
 
         List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(graphData.getEdges(), loadInput.getEdgeType(), loadInput.getDelimter());
 
-        AddElements addElements = new OperationsManager().addElements(elements, publicGraph.getGraphId());
-
-        byte[] jsonBytes1 = JSONSerialiser.serialise(addElements, true);
-        System.out.println(new String(jsonBytes1));
-
-        graph.execute(addElements, new User());
+        operationExecuter.addElements(elements, graphId);
 
         LOGGER.info("Successfully create schama from file {}", graphData.getFileName());
 
-        GetSchema getSchema = new GetSchema.Builder()
-                 .option("gaffer.federatedstore.operation.graphIds", graphId)
-                 .build();
-
-        byte[] jsonBytes2 = JSONSerialiser.serialise(getSchema, true);
-        System.out.println(new String(jsonBytes2));
-
-        Schema createdSchema = graph.execute(getSchema, new User());
+        Schema createdSchema = operationExecuter.getSchema(graphId);
 
         return createdSchema;
 

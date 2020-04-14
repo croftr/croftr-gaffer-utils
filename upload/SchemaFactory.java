@@ -1,10 +1,14 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.gchq.gaffer.data.elementdefinition.exception.SchemaException;
 import uk.gov.gchq.gaffer.exception.SerialisationException;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.store.schema.*;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
 import uk.gov.gchq.gaffer.utils.upload.domain.UserSchema;
+import uk.gov.gchq.koryphe.ValidationResult;
 import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
 import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
 
@@ -14,11 +18,12 @@ import java.util.Set;
 
 public class SchemaFactory {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchemaFactory.class);
+
     private Schema schema;
 
     public SchemaEdgeDefinition createSchemaEdge(String source, String destination, String description) {
         SchemaEdgeDefinition.Builder builder = new SchemaEdgeDefinition.Builder();
-
 
         builder.source(source);
         builder.destination(destination);
@@ -79,8 +84,15 @@ public class SchemaFactory {
 
         UserSchema userSchema = new UserSchema(edges, entities, types);
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);
-//        System.out.println(new String(jsonBytes));
         schema = Schema.fromJson(jsonBytes);
+
+        ValidationResult validationResult = schema.validate();
+
+        if (!validationResult.isValid()) {
+            throw new SchemaException("Schema has failed validation");
+        }
+
+        LOGGER.info("Successfully created Schema");
 
         return schema;
     }
