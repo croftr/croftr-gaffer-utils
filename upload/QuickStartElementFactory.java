@@ -1,6 +1,8 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
 import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.data.element.Edge;
 import uk.gov.gchq.gaffer.data.element.Element;
 import uk.gov.gchq.gaffer.data.element.Entity;
@@ -12,8 +14,10 @@ import java.util.List;
 
 public class QuickStartElementFactory implements SchemaElementFactrory {
 
-    private static final int HLLP_PRECISION = 10;
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuickStartElementFactory.class);
 
+    private static final int HLLP_PRECISION = 10;
+    //TODO TYPE VALUE SUBTYPE
     static final int FROM_NODE = 0;
     static final int EDGE_TYPE = 1;
     static final int TO_NODE = 2;
@@ -52,10 +56,11 @@ public class QuickStartElementFactory implements SchemaElementFactrory {
                 edges.add(edge);
 
             } catch (Exception e) {
-                System.out.println("failed to load " + stringEdge);
-                throw e;
+                LOGGER.error("failed to load {} ", stringEdge);
             }
         }
+
+        LOGGER.info("Successfully loaded {} edges ", edges.size());
 
         elements.addAll(edges);
 

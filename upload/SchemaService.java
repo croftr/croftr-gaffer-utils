@@ -6,6 +6,7 @@ import uk.gov.gchq.gaffer.data.element.Element;
 import uk.gov.gchq.gaffer.graph.Graph;
 import uk.gov.gchq.gaffer.operation.OperationException;
 import uk.gov.gchq.gaffer.store.schema.Schema;
+import uk.gov.gchq.gaffer.user.User;
 import uk.gov.gchq.gaffer.utils.load.LoadInput;
 import uk.gov.gchq.gaffer.utils.upload.domain.GraphData;
 
@@ -22,12 +23,14 @@ public class SchemaService {
 
     private SchemaFactory schemaFactory;
     private OperationExecuter operationExecuter;
+    private User user;
 
     public SchemaService() {
-        schemaFactory = new SchemaFactory();
+        user = new User();
         GraphManager graphManager = new GraphManager();
         Graph graph = graphManager.getExistingGraph();
-        operationExecuter = new OperationExecuter(graph);
+        operationExecuter = new OperationExecuter(graph, user);
+        schemaFactory = new SchemaFactory();
     }
 
     private String getFileName(Part part) {

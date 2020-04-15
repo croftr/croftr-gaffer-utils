@@ -21,9 +21,11 @@ import java.util.List;
 public class OperationExecuter {
 
     private Graph graph;
+    private User user;
 
-    public OperationExecuter(Graph graph) {
+    public OperationExecuter(Graph graph, User user) {
         this.graph = graph;
+        this.user = user;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OperationExecuter.class);
@@ -38,7 +40,6 @@ public class OperationExecuter {
             }
         }
     }
-
 
     public void addGraph(String graphId, Schema schema) throws OperationException {
 
@@ -55,7 +56,7 @@ public class OperationExecuter {
 
         printOperation(addGraph);
 
-        graph.execute(addGraph, new User());
+        graph.execute(addGraph, user);
 
     }
 
@@ -65,14 +66,12 @@ public class OperationExecuter {
                 .option(FederatedStoreConstants.KEY_OPERATION_OPTIONS_GRAPH_IDS, graphId)
                 .build();
 
-        printOperation(getSchema);
-
-        Schema createdSchema = graph.execute(getSchema, new User());
+        Schema createdSchema = graph.execute(getSchema, user);
 
         return createdSchema;
     }
 
-    public AddElements addElements(List<Element> elements, String graphId) {
+    public AddElements addElements(List<Element> elements, String graphId) throws OperationException {
 
         AddElements addElements = new AddElements.Builder()
                 .option(FederatedStoreConstants.KEY_OPERATION_OPTIONS_GRAPH_IDS, graphId)
@@ -80,6 +79,10 @@ public class OperationExecuter {
                 .validate(true)
                 .input(elements)
                 .build();
+
+        printOperation(addElements);
+
+        graph.execute(addElements, user);
 
         return addElements;
 
