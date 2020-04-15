@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
+import static uk.gov.gchq.gaffer.utils.upload.CsvMapper.*;
+
 public class SchemaService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaService.class);
@@ -64,7 +66,7 @@ public class SchemaService {
 
             String str;
             while ((str = reader.readLine()) != null) {
-                String edgeType = str.split(",")[1];
+                String edgeType = str.split(",")[EDGE_TYPE];
                 edgeTypes.add(edgeType);
                 edges.add(str);
             }
@@ -84,7 +86,7 @@ public class SchemaService {
 
         LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
 
-        List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(graphData.getEdges(), loadInput.getEdgeType(), loadInput.getDelimter());
+        List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(graphData.getEdges(), loadInput.getDelimter());
 
         operationExecuter.addElements(elements, graphId);
 

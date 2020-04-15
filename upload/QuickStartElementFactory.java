@@ -12,18 +12,15 @@ import uk.gov.gchq.gaffer.utils.load.SchemaElementFactrory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuickStartElementFactory implements SchemaElementFactrory {
+import static uk.gov.gchq.gaffer.utils.upload.CsvMapper.*;
+
+public class QuickStartElementFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuickStartElementFactory.class);
 
     private static final int HLLP_PRECISION = 10;
-    //TODO TYPE VALUE SUBTYPE
-    static final int FROM_NODE = 0;
-    static final int EDGE_TYPE = 1;
-    static final int TO_NODE = 2;
 
-    @Override
-    public List<Element> createEdgesAndEntities(List<String> stringEdges, String edgeType, String delimiter) {
+    public List<Element> createEdgesAndEntities(List<String> stringEdges, String delimiter) {
 
         List<Edge> edges = new ArrayList<>();
         List<Element> elements = new ArrayList<>();
@@ -38,18 +35,20 @@ public class QuickStartElementFactory implements SchemaElementFactrory {
                     continue;
                 }
 
+                String edgeType = edgeArray[EDGE_TYPE];
+
                 TypeSubTypeValue vertex1 = new TypeSubTypeValue();
                 vertex1.setType(null);
                 vertex1.setSubType(null);
-                vertex1.setValue(edgeArray[FROM_NODE]);
+                vertex1.setValue(edgeArray[FROM_NODE_VALUE]);
 
                 TypeSubTypeValue vertex2 = new TypeSubTypeValue();
                 vertex2.setType(null);
                 vertex2.setSubType(null);
-                vertex2.setValue(edgeArray[TO_NODE]);
+                vertex2.setValue(edgeArray[TO_NODE_VALUE]);
 
                 Edge edge = new Edge.Builder()
-                        .group(edgeArray[EDGE_TYPE])
+                        .group(edgeType)
                         .source(vertex1).dest(vertex2).directed(true)
                         .build();
 
