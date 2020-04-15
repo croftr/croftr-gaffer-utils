@@ -23,6 +23,7 @@ public class QuickStartElementFactory {
     public List<Element> createEdgesAndEntities(List<String> stringEdges, String delimiter) {
 
         List<Edge> edges = new ArrayList<>();
+        List<Entity> entities = new ArrayList<>();
         List<Element> elements = new ArrayList<>();
 
         for (String stringEdge : stringEdges) {
@@ -38,14 +39,36 @@ public class QuickStartElementFactory {
                 String edgeType = edgeArray[EDGE_TYPE];
 
                 TypeSubTypeValue vertex1 = new TypeSubTypeValue();
-                vertex1.setType(null);
-                vertex1.setSubType(null);
+                vertex1.setType(edgeArray[FROM_NODE_TYPE]);
+                vertex1.setSubType(edgeArray[FROM_NODE_SUBTYPE]);
                 vertex1.setValue(edgeArray[FROM_NODE_VALUE]);
 
                 TypeSubTypeValue vertex2 = new TypeSubTypeValue();
-                vertex2.setType(null);
-                vertex2.setSubType(null);
+                vertex2.setType(edgeArray[TO_NODE_TYPE]);
+                vertex2.setSubType(edgeArray[TO_NODE_SUBTYPE]);
                 vertex2.setValue(edgeArray[TO_NODE_VALUE]);
+
+
+
+                HyperLogLogPlus nodeAHllp = new HyperLogLogPlus(HLLP_PRECISION);
+                HyperLogLogPlus nodeBHllp = new HyperLogLogPlus(HLLP_PRECISION);
+                nodeAHllp.offer(vertex2);
+                nodeBHllp.offer(vertex1);
+
+                Entity nodeAEntity = new Entity.Builder()
+                        .group("cardinality")
+                        .vertex(vertex1)
+                        .property("approxCardinality", nodeAHllp)
+                        .build();
+
+                Entity nodeBEntity = new Entity.Builder()
+                        .group("cardinality")
+                        .vertex(vertex2)
+                        .property("approxCardinality", nodeBHllp)
+                        .build();
+
+
+
 
                 Edge edge = new Edge.Builder()
                         .group(edgeType)
@@ -53,6 +76,8 @@ public class QuickStartElementFactory {
                         .build();
 
                 edges.add(edge);
+                entities.add(nodeAEntity);
+                entities.add(nodeBEntity);
 
             } catch (Exception e) {
                 LOGGER.error("failed to load {} ", stringEdge);
@@ -61,6 +86,7 @@ public class QuickStartElementFactory {
 
         LOGGER.info("Successfully loaded {} edges ", edges.size());
 
+        elements.addAll(entities);
         elements.addAll(edges);
 
         return elements;

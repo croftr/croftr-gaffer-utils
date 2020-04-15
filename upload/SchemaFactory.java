@@ -1,10 +1,13 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
+import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.data.elementdefinition.exception.SchemaException;
 import uk.gov.gchq.gaffer.exception.SerialisationException;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
+import uk.gov.gchq.gaffer.sketches.clearspring.cardinality.binaryoperator.HyperLogLogPlusAggregator;
+import uk.gov.gchq.gaffer.sketches.clearspring.cardinality.serialisation.HyperLogLogPlusSerialiser;
 import uk.gov.gchq.gaffer.store.schema.*;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
 import uk.gov.gchq.gaffer.utils.upload.domain.UserSchema;
@@ -54,6 +57,9 @@ public class SchemaFactory {
             builder.aggregateFunction(new Sum());
         } else if (clazz.equals(TypeSubTypeValue.class)) {
             //no agg function needed for these
+        } else if (clazz.equals(HyperLogLogPlus.class)) {
+            builder.aggregateFunction(new HyperLogLogPlusAggregator());
+            builder.serialiser(new HyperLogLogPlusSerialiser());
         }
 
         TypeDefinition typeDefinition = builder.build();
@@ -76,11 +82,23 @@ public class SchemaFactory {
         SchemaEntityDefinition schemaEntityDefinition = createSchemaEntity();
         entities.put("nodeStats", schemaEntityDefinition);
 
+
+        SchemaEntityDefinition.Builder builder = new SchemaEntityDefinition.Builder();
+        builder.vertex("node");
+        builder.property("approxCardinality", "hyperloglogplus");
+        SchemaEntityDefinition schemaEntityDefinition1 = builder.build();
+        entities.put("cardinality", schemaEntityDefinition1);
+
+
+
         TypeDefinition vertexType = createSchemaType(TypeSubTypeValue.class);
         types.put("node", vertexType);
 
         TypeDefinition weightType = createSchemaType(Integer.class);
         types.put("count", weightType);
+
+        TypeDefinition hyperloglogplus = createSchemaType(HyperLogLogPlus.class);
+        types.put("hyperloglogplus", hyperloglogplus);
 
         UserSchema userSchema = new UserSchema(edges, entities, types);
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);
