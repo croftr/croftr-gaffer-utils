@@ -68,10 +68,14 @@ public class QuickStartElementFactory {
                         .build();
 
 
-
+                Integer edgeWeight = 1;
+                if (edgeArray[EDGE_WEIGHT] != null ) {
+                    edgeWeight = Integer.parseInt(edgeArray[EDGE_WEIGHT]);
+                }
 
                 Edge edge = new Edge.Builder()
                         .group(edgeType)
+                        .property("weight", edgeWeight)
                         .source(vertex1).dest(vertex2).directed(true)
                         .build();
 

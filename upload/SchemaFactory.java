@@ -31,17 +31,18 @@ public class SchemaFactory {
         builder.source(source);
         builder.destination(destination);
         builder.description(description);
+        builder.property("weight", "count");
 
         SchemaEdgeDefinition schemaEdgeDefinition = builder.build();
 
         return schemaEdgeDefinition;
     }
 
-    private SchemaEntityDefinition createSchemaEntity() {
+    private SchemaEntityDefinition createSchemaEntity(String propertyName, String propertyType) {
         SchemaEntityDefinition.Builder builder = new SchemaEntityDefinition.Builder();
 
         builder.vertex("node");
-        builder.property("weight", "count");
+        builder.property(propertyName, propertyType);
 
         SchemaEntityDefinition schemaEntityDefinition = builder.build();
 
@@ -79,17 +80,11 @@ public class SchemaFactory {
             edges.put(edgeType, schemaEdgeDefinition);
         });
 
-        SchemaEntityDefinition schemaEntityDefinition = createSchemaEntity();
-        entities.put("nodeStats", schemaEntityDefinition);
+        SchemaEntityDefinition nodeStatsEntity = createSchemaEntity("todo", "count");
+        entities.put("nodeStats", nodeStatsEntity);
 
-
-        SchemaEntityDefinition.Builder builder = new SchemaEntityDefinition.Builder();
-        builder.vertex("node");
-        builder.property("approxCardinality", "hyperloglogplus");
-        SchemaEntityDefinition schemaEntityDefinition1 = builder.build();
-        entities.put("cardinality", schemaEntityDefinition1);
-
-
+        SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");
+        entities.put("cardinality", hyperloglogplusEntity);
 
         TypeDefinition vertexType = createSchemaType(TypeSubTypeValue.class);
         types.put("node", vertexType);
