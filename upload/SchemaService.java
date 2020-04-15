@@ -9,6 +9,7 @@ import uk.gov.gchq.gaffer.store.schema.Schema;
 import uk.gov.gchq.gaffer.user.User;
 import uk.gov.gchq.gaffer.utils.load.LoadInput;
 import uk.gov.gchq.gaffer.utils.upload.domain.GraphData;
+import uk.gov.gchq.gaffer.utils.upload.load.QuickStartElementFactory;
 
 import javax.servlet.http.Part;
 import java.io.BufferedReader;

@@ -14,6 +14,7 @@ import uk.gov.gchq.gaffer.user.User;
 import uk.gov.gchq.gaffer.utils.load.FileReader;
 import uk.gov.gchq.gaffer.utils.load.LoadInput;
 import uk.gov.gchq.gaffer.utils.load.OperationsManager;
+import uk.gov.gchq.gaffer.utils.upload.load.QuickStartElementFactory;
 import uk.gov.gchq.koryphe.ValidationResult;
 
 import java.util.HashSet;

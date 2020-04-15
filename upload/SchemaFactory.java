@@ -80,7 +80,7 @@ public class SchemaFactory {
             edges.put(edgeType, schemaEdgeDefinition);
         });
 
-        SchemaEntityDefinition nodeStatsEntity = createSchemaEntity("todo", "count");
+        SchemaEntityDefinition nodeStatsEntity = createSchemaEntity("countValue", "count");
         entities.put("nodeStats", nodeStatsEntity);
 
         SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");

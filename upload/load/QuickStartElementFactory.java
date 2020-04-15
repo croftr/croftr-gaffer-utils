@@ -1,13 +1,10 @@
-package uk.gov.gchq.gaffer.utils.upload;
+package uk.gov.gchq.gaffer.utils.upload.load;
 
-import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.data.element.Edge;
 import uk.gov.gchq.gaffer.data.element.Element;
-import uk.gov.gchq.gaffer.data.element.Entity;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
-import uk.gov.gchq.gaffer.utils.load.SchemaElementFactrory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +15,14 @@ public class QuickStartElementFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuickStartElementFactory.class);
 
-    private static final int HLLP_PRECISION = 10;
+    private CentralityManager centralityManager;
+
+    public QuickStartElementFactory() {
+        centralityManager = new CentralityManager();
+    }
 
     public List<Element> createEdgesAndEntities(List<String> stringEdges, String delimiter) {
 
-        List<Edge> edges = new ArrayList<>();
-        List<Entity> entities = new ArrayList<>();
         List<Element> elements = new ArrayList<>();
 
         for (String stringEdge : stringEdges) {
@@ -48,25 +47,7 @@ public class QuickStartElementFactory {
                 vertex2.setSubType(edgeArray[TO_NODE_SUBTYPE]);
                 vertex2.setValue(edgeArray[TO_NODE_VALUE]);
 
-
-
-                HyperLogLogPlus nodeAHllp = new HyperLogLogPlus(HLLP_PRECISION);
-                HyperLogLogPlus nodeBHllp = new HyperLogLogPlus(HLLP_PRECISION);
-                nodeAHllp.offer(vertex2);
-                nodeBHllp.offer(vertex1);
-
-                Entity nodeAEntity = new Entity.Builder()
-                        .group("cardinality")
-                        .vertex(vertex1)
-                        .property("approxCardinality", nodeAHllp)
-                        .build();
-
-                Entity nodeBEntity = new Entity.Builder()
-                        .group("cardinality")
-                        .vertex(vertex2)
-                        .property("approxCardinality", nodeBHllp)
-                        .build();
-
+                elements.addAll(centralityManager.generateEntityCentrality(vertex1, vertex2));
 
                 Integer edgeWeight = 1;
                 if (edgeArray[EDGE_WEIGHT] != null ) {
@@ -79,19 +60,14 @@ public class QuickStartElementFactory {
                         .source(vertex1).dest(vertex2).directed(true)
                         .build();
 
-                edges.add(edge);
-                entities.add(nodeAEntity);
-                entities.add(nodeBEntity);
+                elements.add(edge);
 
             } catch (Exception e) {
                 LOGGER.error("failed to load {} ", stringEdge);
             }
         }
 
-        LOGGER.info("Successfully loaded {} edges ", edges.size());
-
-        elements.addAll(entities);
-        elements.addAll(edges);
+        LOGGER.info("Successfully loaded {} elements ", elements.size());
 
         return elements;
     }
