@@ -8,11 +8,13 @@ public class GraphData {
     private String fileName;
     private List<String> edges;
     private Set<String> edgeTypes;
+    private boolean isSimpleFile;
 
-    public GraphData(String fileName, List<String> edges, Set<String> edgeTypes) {
+    public GraphData(String fileName, List<String> edges, Set<String> edgeTypes, boolean isSimpleFile) {
         this.fileName = fileName;
         this.edges = edges;
         this.edgeTypes = edgeTypes;
+        this.isSimpleFile = isSimpleFile;
     }
 
     public List<String> getEdges() {
@@ -37,5 +39,13 @@ public class GraphData {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public boolean isSimpleFile() {
+        return isSimpleFile;
+    }
+
+    public void setSimpleFile(boolean simpleFile) {
+        isSimpleFile = simpleFile;
     }
 }

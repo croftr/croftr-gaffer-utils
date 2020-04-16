@@ -56,7 +56,7 @@ public class LoadRunner {
 
             LoadInput loadInput = new LoadInput("\\t", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
             List<String> edges = new FileReader().readFile(loadInput.getGraphData());
-            List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(edges, loadInput.getDelimter());
+            List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(edges, loadInput.getDelimter(), false);
 
             AddElements addElements = new OperationsManager().addElements(elements, GRAPH_ID);
 
