@@ -23,52 +23,50 @@ public class QuickStartElementFactory {
 
     private void mapSimpleEdge(String[] edgeArray, List<Element> elements) {
 
-        TypeSubTypeValue vertex1 = new TypeSubTypeValue();
-//        vertex1.setType(edgeArray[FROM_NODE_TYPE]);
-//        vertex1.setSubType(edgeArray[FROM_NODE_SUBTYPE]);
-        vertex1.setValue(edgeArray[SIMPLE_FROM_NODE_VALUE]);
-
-        TypeSubTypeValue vertex2 = new TypeSubTypeValue();
-//        vertex2.setType(edgeArray[TO_NODE_TYPE]);
-//        vertex2.setSubType(edgeArray[TO_NODE_SUBTYPE]);
-        vertex2.setValue(edgeArray[SIMPLE_TO_NODE_VALUE]);
+        TypeSubTypeValue vertex1 = createNode(null, null, edgeArray[SIMPLE_FROM_NODE_VALUE]);
+        TypeSubTypeValue vertex2 = createNode(null, null, edgeArray[SIMPLE_TO_NODE_VALUE]);
 
         elements.addAll(centralityManager.generateEntityCentrality(vertex1, vertex2));
 
-        Edge edge = new Edge.Builder()
-                .group(DEFAULT_EDGE_TYPE)
-                .source(vertex1).dest(vertex2).directed(false)
-                .build();
+        Edge edge = createEdge(vertex1, vertex2, DEFAULT_EDGE_TYPE, null, null);
 
         elements.add(edge);
     }
 
-    private void mapDetailEdge(String[] edgeArray, List<Element> elements) {
+    private TypeSubTypeValue createNode(String type, String subType, String value) {
+        TypeSubTypeValue node = new TypeSubTypeValue();
+        node.setType(type);
+        node.setSubType(subType);
+        node.setValue(value);
+        return node;
+    }
 
-        String edgeType = edgeArray[EDGE_TYPE];
+    private Edge createEdge(TypeSubTypeValue vertex1, TypeSubTypeValue vertex2, String edgeType, String directed, String weight) {
 
-        TypeSubTypeValue vertex1 = new TypeSubTypeValue();
-        vertex1.setType(edgeArray[FROM_NODE_TYPE]);
-        vertex1.setSubType(edgeArray[FROM_NODE_SUBTYPE]);
-        vertex1.setValue(edgeArray[FROM_NODE_VALUE]);
-
-        TypeSubTypeValue vertex2 = new TypeSubTypeValue();
-        vertex2.setType(edgeArray[TO_NODE_TYPE]);
-        vertex2.setSubType(edgeArray[TO_NODE_SUBTYPE]);
-        vertex2.setValue(edgeArray[TO_NODE_VALUE]);
-
-        elements.addAll(centralityManager.generateEntityCentrality(vertex1, vertex2));
+        boolean isDirected = Boolean.parseBoolean(directed);
 
         Integer edgeWeight = 1;
-        if (edgeArray[EDGE_WEIGHT] != null ) {
-            edgeWeight = Integer.parseInt(edgeArray[EDGE_WEIGHT]);
+        if (weight != null ) {
+            edgeWeight = Integer.parseInt(weight);
         }
 
         Edge edge = new Edge.Builder()
                 .group(edgeType)
                 .property("weight", edgeWeight)
-                .source(vertex1).dest(vertex2).directed(true)
+                .source(vertex1).dest(vertex2).directed(isDirected)
                 .build();
+
+        return edge;
+    }
+
+    private void mapDetailEdge(String[] edgeArray, List<Element> elements) {
+
+        TypeSubTypeValue vertex1 = createNode(edgeArray[FROM_NODE_TYPE], edgeArray[FROM_NODE_SUBTYPE], edgeArray[FROM_NODE_VALUE]);
+        TypeSubTypeValue vertex2 = createNode(edgeArray[TO_NODE_TYPE], edgeArray[TO_NODE_SUBTYPE], edgeArray[TO_NODE_VALUE]);
+
+        elements.addAll(centralityManager.generateEntityCentrality(vertex1, vertex2));
+
+        Edge edge = createEdge(vertex1, vertex2, edgeArray[EDGE_TYPE], edgeArray[DIRECTED], edgeArray[EDGE_WEIGHT]);
 
         elements.add(edge);
     }
@@ -94,36 +92,8 @@ public class QuickStartElementFactory {
                     mapDetailEdge(edgeArray,  elements);
                 }
 
-
-//                String edgeType = edgeArray[EDGE_TYPE];
-//
-//                TypeSubTypeValue vertex1 = new TypeSubTypeValue();
-//                vertex1.setType(edgeArray[FROM_NODE_TYPE]);
-//                vertex1.setSubType(edgeArray[FROM_NODE_SUBTYPE]);
-//                vertex1.setValue(edgeArray[FROM_NODE_VALUE]);
-//
-//                TypeSubTypeValue vertex2 = new TypeSubTypeValue();
-//                vertex2.setType(edgeArray[TO_NODE_TYPE]);
-//                vertex2.setSubType(edgeArray[TO_NODE_SUBTYPE]);
-//                vertex2.setValue(edgeArray[TO_NODE_VALUE]);
-//
-//                elements.addAll(centralityManager.generateEntityCentrality(vertex1, vertex2));
-//
-//                Integer edgeWeight = 1;
-//                if (edgeArray[EDGE_WEIGHT] != null ) {
-//                    edgeWeight = Integer.parseInt(edgeArray[EDGE_WEIGHT]);
-//                }
-//
-//                Edge edge = new Edge.Builder()
-//                        .group(edgeType)
-//                        .property("weight", edgeWeight)
-//                        .source(vertex1).dest(vertex2).directed(true)
-//                        .build();
-//
-//                elements.add(edge);
-
             } catch (Exception e) {
-                LOGGER.error("failed to load {} ", stringEdge);
+                LOGGER.error("failed to load {} ", stringEdge, e);
             }
         }
 

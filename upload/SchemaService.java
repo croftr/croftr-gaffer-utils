@@ -9,6 +9,7 @@ import uk.gov.gchq.gaffer.operation.OperationException;
 import uk.gov.gchq.gaffer.store.schema.Schema;
 import uk.gov.gchq.gaffer.user.User;
 import uk.gov.gchq.gaffer.utils.load.LoadInput;
+import uk.gov.gchq.gaffer.utils.upload.domain.CreateSchemaResponse;
 import uk.gov.gchq.gaffer.utils.upload.domain.GraphData;
 import uk.gov.gchq.gaffer.utils.upload.load.QuickStartElementFactory;
 
@@ -26,7 +27,7 @@ public class SchemaService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaService.class);
 
     private static final int SIMPLE_FILE_COLUMN_COUNT = 2;
-    private static final int DETAIL_FILE_COLUMN_COUNT = 8;
+    private static final int DETAIL_FILE_COLUMN_COUNT = 9;
 
     private SchemaFactory schemaFactory;
     private OperationExecuter operationExecuter;
@@ -92,7 +93,7 @@ public class SchemaService {
 
     }
 
-    public Schema createSchemaFromData(Collection<Part> parts, String graphId) throws IOException, OperationException {
+    public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId) throws IOException, OperationException {
 
         GraphData graphData = convertGraphData(parts);
 
@@ -110,7 +111,7 @@ public class SchemaService {
 
         Schema createdSchema = operationExecuter.getSchema(graphId);
 
-        return createdSchema;
+        return new CreateSchemaResponse(createdSchema, true, elements.size());
 
     }
 }
