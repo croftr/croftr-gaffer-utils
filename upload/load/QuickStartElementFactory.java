@@ -34,7 +34,7 @@ public class QuickStartElementFactory {
         Edge edge = createEdge(vertex1, vertex2, DEFAULT_EDGE_TYPE, null, null);
 
         elements.add(edge);
-        edgeTypes.add(edgeArray[EDGE_TYPE]);
+        edgeTypes.add(DEFAULT_EDGE_TYPE);
     }
 
     private TypeSubTypeValue createNode(String type, String subType, String value) {
