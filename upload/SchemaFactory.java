@@ -14,10 +14,13 @@ import uk.gov.gchq.gaffer.utils.upload.domain.UserSchema;
 import uk.gov.gchq.koryphe.ValidationResult;
 import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
 import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
+import uk.gov.gchq.koryphe.impl.predicate.IsFalse;
+import uk.gov.gchq.koryphe.impl.predicate.IsTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class SchemaFactory {
 
@@ -49,7 +52,7 @@ public class SchemaFactory {
         return schemaEntityDefinition;
     }
 
-    private TypeDefinition createSchemaType(Class<?> clazz) {
+    private TypeDefinition createSchemaType(Class<?> clazz, Predicate predicate) {
         TypeDefinition.Builder builder = new TypeDefinition.Builder();
 
         if (clazz.equals(String.class)) {
@@ -61,6 +64,10 @@ public class SchemaFactory {
         } else if (clazz.equals(HyperLogLogPlus.class)) {
             builder.aggregateFunction(new HyperLogLogPlusAggregator());
             builder.serialiser(new HyperLogLogPlusSerialiser());
+        }
+
+        if (predicate != null) {
+            builder.validateFunctions(predicate);
         }
 
         TypeDefinition typeDefinition = builder.build();
@@ -86,13 +93,19 @@ public class SchemaFactory {
         SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");
         entities.put("cardinality", hyperloglogplusEntity);
 
-        TypeDefinition vertexType = createSchemaType(TypeSubTypeValue.class);
+        TypeDefinition vertexType = createSchemaType(TypeSubTypeValue.class, null);
         types.put("node", vertexType);
 
-        TypeDefinition weightType = createSchemaType(Integer.class);
+        TypeDefinition weightType = createSchemaType(Integer.class, null);
         types.put("count", weightType);
 
-        TypeDefinition hyperloglogplus = createSchemaType(HyperLogLogPlus.class);
+        TypeDefinition trueType = createSchemaType(Boolean.class, new IsTrue());
+        types.put("true", trueType);
+
+        TypeDefinition falseType = createSchemaType(Boolean.class, new IsFalse());
+        types.put("false", falseType);
+
+        TypeDefinition hyperloglogplus = createSchemaType(HyperLogLogPlus.class, null);
         types.put("hyperloglogplus", hyperloglogplus);
 
         UserSchema userSchema = new UserSchema(edges, entities, types);

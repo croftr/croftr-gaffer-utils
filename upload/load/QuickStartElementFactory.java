@@ -5,9 +5,12 @@ import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.data.element.Edge;
 import uk.gov.gchq.gaffer.data.element.Element;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
+import uk.gov.gchq.gaffer.utils.upload.domain.CreateElementsResponse;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static uk.gov.gchq.gaffer.utils.upload.CsvMapper.*;
 
@@ -21,7 +24,7 @@ public class QuickStartElementFactory {
         centralityManager = new CentralityManager();
     }
 
-    private void mapSimpleEdge(String[] edgeArray, List<Element> elements) {
+    private void mapSimpleEdge(String[] edgeArray, List<Element> elements, Set<String> edgeTypes) {
 
         TypeSubTypeValue vertex1 = createNode(null, null, edgeArray[SIMPLE_FROM_NODE_VALUE]);
         TypeSubTypeValue vertex2 = createNode(null, null, edgeArray[SIMPLE_TO_NODE_VALUE]);
@@ -31,6 +34,7 @@ public class QuickStartElementFactory {
         Edge edge = createEdge(vertex1, vertex2, DEFAULT_EDGE_TYPE, null, null);
 
         elements.add(edge);
+        edgeTypes.add(edgeArray[EDGE_TYPE]);
     }
 
     private TypeSubTypeValue createNode(String type, String subType, String value) {
@@ -59,7 +63,7 @@ public class QuickStartElementFactory {
         return edge;
     }
 
-    private void mapDetailEdge(String[] edgeArray, List<Element> elements) {
+    private void mapDetailEdge(String[] edgeArray, List<Element> elements, Set<String> edgeTypes) {
 
         TypeSubTypeValue vertex1 = createNode(edgeArray[FROM_NODE_TYPE], edgeArray[FROM_NODE_SUBTYPE], edgeArray[FROM_NODE_VALUE]);
         TypeSubTypeValue vertex2 = createNode(edgeArray[TO_NODE_TYPE], edgeArray[TO_NODE_SUBTYPE], edgeArray[TO_NODE_VALUE]);
@@ -69,12 +73,15 @@ public class QuickStartElementFactory {
         Edge edge = createEdge(vertex1, vertex2, edgeArray[EDGE_TYPE], edgeArray[DIRECTED], edgeArray[EDGE_WEIGHT]);
 
         elements.add(edge);
+        edgeTypes.add(edgeArray[EDGE_TYPE]);
     }
 
 
-    public List<Element> createEdgesAndEntities(List<String> stringEdges, String delimiter, boolean simpleFile) {
+    public CreateElementsResponse createEdgesAndEntities(List<String> stringEdges, String delimiter, boolean simpleFile) {
 
         List<Element> elements = new ArrayList<>();
+        Set<String> edgeTypes = new HashSet<>();
+        int edgeCounts = 0;
 
         for (String stringEdge : stringEdges) {
 
@@ -87,10 +94,11 @@ public class QuickStartElementFactory {
                 }
 
                 if (simpleFile) {
-                    mapSimpleEdge(edgeArray,  elements);
+                    mapSimpleEdge(edgeArray, elements, edgeTypes);
                 } else {
-                    mapDetailEdge(edgeArray,  elements);
+                    mapDetailEdge(edgeArray, elements, edgeTypes);
                 }
+                edgeCounts++;
 
             } catch (Exception e) {
                 LOGGER.error("failed to load {} ", stringEdge, e);
@@ -99,6 +107,6 @@ public class QuickStartElementFactory {
 
         LOGGER.info("Successfully loaded {} elements ", elements.size());
 
-        return elements;
+        return new CreateElementsResponse(elements, edgeTypes, edgeCounts);
     }
 }

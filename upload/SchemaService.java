@@ -9,6 +9,7 @@ import uk.gov.gchq.gaffer.operation.OperationException;
 import uk.gov.gchq.gaffer.store.schema.Schema;
 import uk.gov.gchq.gaffer.user.User;
 import uk.gov.gchq.gaffer.utils.load.LoadInput;
+import uk.gov.gchq.gaffer.utils.upload.domain.CreateElementsResponse;
 import uk.gov.gchq.gaffer.utils.upload.domain.CreateSchemaResponse;
 import uk.gov.gchq.gaffer.utils.upload.domain.GraphData;
 import uk.gov.gchq.gaffer.utils.upload.load.QuickStartElementFactory;
@@ -31,6 +32,7 @@ public class SchemaService {
 
     private SchemaFactory schemaFactory;
     private OperationExecuter operationExecuter;
+    private QuickStartElementFactory quickStartElementFactory;
     private User user;
 
     public SchemaService() {
@@ -39,6 +41,7 @@ public class SchemaService {
         Graph graph = graphManager.getExistingGraph();
         operationExecuter = new OperationExecuter(graph, user);
         schemaFactory = new SchemaFactory();
+        quickStartElementFactory = new QuickStartElementFactory();
     }
 
     private String getFileName(Part part) {
@@ -103,15 +106,15 @@ public class SchemaService {
 
         LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
 
-        List<Element> elements = new QuickStartElementFactory().createEdgesAndEntities(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile());
+        CreateElementsResponse createElementsResponse = quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile());
 
-        operationExecuter.addElements(elements, graphId);
+        operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 
         LOGGER.info("Successfully create schama from file {}", graphData.getFileName());
 
         Schema createdSchema = operationExecuter.getSchema(graphId);
 
-        return new CreateSchemaResponse(createdSchema, true, elements.size());
+        return new CreateSchemaResponse(createdSchema, true, createElementsResponse.getEdgeCount(), createElementsResponse.getEdgeTypes());
 
     }
 }
