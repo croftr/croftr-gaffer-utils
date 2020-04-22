@@ -9,11 +9,11 @@ public class GraphManager {
         System.setProperty("gaffer.serialiser.json.modules", "uk.gov.gchq.gaffer.sketches.serialisation.json.SketchesJsonModules");
     }
 
-    public Graph getExistingGraph() {
+    public Graph getExistingGraph(String graphId) {
 
         Graph graph = new Graph.Builder()
                 .store(new ProxyStore.Builder()
-                        .graphId("")  // for some reason this is needed
+                        .graphId(graphId)  // for some reason this is needed
                         .host("localhost")
                         .port(8080)
                         .contextRoot("rest")

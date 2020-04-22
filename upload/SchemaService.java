@@ -2,7 +2,6 @@ package uk.gov.gchq.gaffer.utils.upload;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.gchq.gaffer.data.element.Element;
 import uk.gov.gchq.gaffer.data.elementdefinition.exception.SchemaException;
 import uk.gov.gchq.gaffer.graph.Graph;
 import uk.gov.gchq.gaffer.operation.OperationException;
@@ -37,9 +36,6 @@ public class SchemaService {
 
     public SchemaService() {
         user = new User();
-        GraphManager graphManager = new GraphManager();
-        Graph graph = graphManager.getExistingGraph();
-        operationExecuter = new OperationExecuter(graph, user);
         schemaFactory = new SchemaFactory();
         quickStartElementFactory = new QuickStartElementFactory();
     }
@@ -82,7 +78,6 @@ public class SchemaService {
                  throw new SchemaException("CSV files must contain either " + SIMPLE_FILE_COLUMN_COUNT + " or " +DETAIL_FILE_COLUMN_COUNT + " columns" );
             }
 
-
             String str;
             while ((str = reader.readLine()) != null) {
                 String[] edgeArray = str.split(",");
@@ -96,13 +91,17 @@ public class SchemaService {
 
     }
 
-    public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId) throws IOException, OperationException {
+    public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId, String auths) throws IOException, OperationException {
+
+        GraphManager graphManager = new GraphManager();
+        Graph graph = graphManager.getExistingGraph("");
+        operationExecuter = new OperationExecuter(graph, user);
 
         GraphData graphData = convertGraphData(parts);
 
         Schema schema = schemaFactory.createSchema(graphData.getEdgeTypes());
 
-        operationExecuter.addGraph(graphId, schema);
+        operationExecuter.addGraph(graphId, schema, auths);
 
         LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
 
@@ -111,6 +110,34 @@ public class SchemaService {
         operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 
         LOGGER.info("Successfully create schama from file {}", graphData.getFileName());
+
+        Schema createdSchema = operationExecuter.getSchema(graphId);
+
+        return new CreateSchemaResponse(createdSchema, true, createElementsResponse.getEdgeCount(), createElementsResponse.getEdgeTypes());
+
+    }
+
+    public CreateSchemaResponse loadData(Collection<Part> parts, String graphId, String auths) throws IOException, OperationException {
+
+        LOGGER.info("Loading data into {}", graphId);
+
+        GraphManager graphManager = new GraphManager();
+        Graph graph = graphManager.getExistingGraph(graphId);
+        operationExecuter = new OperationExecuter(graph, user);
+
+        GraphData graphData = convertGraphData(parts);
+
+        Schema schema = graph.getSchema();
+
+//        operationExecuter.addGraph(graphId, schema, auths);
+
+        LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
+
+        CreateElementsResponse createElementsResponse = quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile());
+
+        operationExecuter.addElements(createElementsResponse.getElements(), graphId);
+
+        LOGGER.info("Successfully loaded data from file {}", graphData.getFileName());
 
         Schema createdSchema = operationExecuter.getSchema(graphId);
 

@@ -41,15 +41,27 @@ public class OperationExecuter {
         }
     }
 
-    public void addGraph(String graphId, Schema schema) throws OperationException {
+    public void addGraph(String graphId, Schema schema, String auths) throws OperationException {
+
+        boolean isPublic = false;
+        String[] authsArray = {};
+
+        if ( auths.equals("public")) {
+          isPublic = true;
+        } else {
+            if (!auths.equals("private")) {
+                authsArray = auths.split(",");
+            }
+        }
 
         StoreProperties storeProperties = new StoreProperties();
         storeProperties.setStoreClass(MockAccumuloStore.class);
 
         AddGraph addGraph = new AddGraph.Builder()
                 .graphId(graphId)
+                .graphAuths(authsArray)
                 .schema(schema)
-                .isPublic(true)
+                .isPublic(isPublic)
                 .storeProperties(storeProperties)
                 .build();
 
@@ -57,7 +69,6 @@ public class OperationExecuter {
         printOperation(addGraph);
 
         graph.execute(addGraph, user);
-
     }
 
     public Schema getSchema(String graphId) throws OperationException {
@@ -67,7 +78,7 @@ public class OperationExecuter {
                 .build();
 
         Schema createdSchema = graph.execute(getSchema, user);
-
+        
         return createdSchema;
     }
 

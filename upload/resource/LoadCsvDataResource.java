@@ -1,31 +1,26 @@
-package uk.gov.gchq.gaffer.utils.upload;
+package uk.gov.gchq.gaffer.utils.upload.resource;
 
-import com.google.inject.internal.util.$SourceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.operation.OperationException;
-import uk.gov.gchq.gaffer.store.schema.Schema;
-import uk.gov.gchq.gaffer.utils.load.gremlin.GremlinLoader;
+import uk.gov.gchq.gaffer.utils.upload.SchemaService;
 import uk.gov.gchq.gaffer.utils.upload.domain.CreateSchemaResponse;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 @MultipartConfig(fileSizeThreshold = 1024 * 1024,
         maxFileSize = 1024 * 1024 * 5,
         maxRequestSize = 1024 * 1024 * 5 * 5)
-public class LoadCsvResource extends HttpServlet {
+public class LoadCsvDataResource extends HttpServlet {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoadCsvResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoadCsvDataResource.class);
 
     private SchemaService schemaService;
 
@@ -36,11 +31,11 @@ public class LoadCsvResource extends HttpServlet {
     //    http://localhost:8080/rest/shortestPath?node1=61&node2=7
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
         String schemaName = request.getParameter("name");
-        LOGGER.info("Received request to create schema {} ", schemaName);
         CreateSchemaResponse createSchemaResponse = null;
         try {
-            createSchemaResponse = schemaService.createSchemaFromData(request.getParts(), schemaName);
+            createSchemaResponse = schemaService.loadData(request.getParts(), schemaName, "auths");
         } catch (OperationException e) {
             e.printStackTrace();
         }
