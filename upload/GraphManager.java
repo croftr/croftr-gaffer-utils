@@ -1,5 +1,6 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
+import uk.gov.gchq.gaffer.federatedstore.FederatedStoreConstants;
 import uk.gov.gchq.gaffer.graph.Graph;
 import uk.gov.gchq.gaffer.proxystore.ProxyStore;
 

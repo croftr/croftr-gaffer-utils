@@ -35,7 +35,7 @@ public class LoadCsvDataResource extends HttpServlet {
         String schemaName = request.getParameter("name");
         CreateSchemaResponse createSchemaResponse = null;
         try {
-            createSchemaResponse = schemaService.loadData(request.getParts(), schemaName, "auths");
+            createSchemaResponse = schemaService.loadData(request.getParts(), schemaName);
         } catch (OperationException e) {
             e.printStackTrace();
         }

@@ -9,13 +9,43 @@ public class CreateSchemaResponse {
     private Schema schema;
     private boolean loadSuccess;
     private int edgeLoadCount;
+    private int rejectedEdgeLoadCount;
     private Set<String> edgeTypes;
+    private int newEdgeGroupCount;
+    private Set<String> newEdgeTypes;
 
-    public CreateSchemaResponse(Schema schema, boolean loadSuccess, int edgeLoadCount, Set<String> edgeTypes) {
+    public CreateSchemaResponse(Schema schema, boolean loadSuccess, int edgeLoadCount, int rejectedEdgeLoadCount, Set<String> edgeTypes, int newEdgeGroupCount, Set<String> newEdgeTypes) {
         this.schema = schema;
         this.loadSuccess = loadSuccess;
         this.edgeLoadCount = edgeLoadCount;
+        this.rejectedEdgeLoadCount = rejectedEdgeLoadCount;
         this.edgeTypes = edgeTypes;
+        this.newEdgeGroupCount = newEdgeGroupCount;
+        this.newEdgeTypes = newEdgeTypes;
+    }
+
+    public int getNewEdgeGroupCount() {
+        return newEdgeGroupCount;
+    }
+
+    public void setNewEdgeGroupCount(int newEdgeGroupCount) {
+        this.newEdgeGroupCount = newEdgeGroupCount;
+    }
+
+    public Set<String> getNewEdgeTypes() {
+        return newEdgeTypes;
+    }
+
+    public void setNewEdgeTypes(Set<String> newEdgeTypes) {
+        this.newEdgeTypes = newEdgeTypes;
+    }
+
+    public int getRejectedEdgeLoadCount() {
+        return rejectedEdgeLoadCount;
+    }
+
+    public void setRejectedEdgeLoadCount(int rejectedEdgeLoadCount) {
+        this.rejectedEdgeLoadCount = rejectedEdgeLoadCount;
     }
 
     public Schema getSchema() {

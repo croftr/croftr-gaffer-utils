@@ -72,10 +72,10 @@ public class SchemaService {
 
             String firstLine = reader.readLine();
             String[] firstLineArray = firstLine.split(",");
-            if (firstLineArray.length == SIMPLE_FILE_COLUMN_COUNT ) {
+            if (firstLineArray.length == SIMPLE_FILE_COLUMN_COUNT) {
                 isSimpleFile = true;
-            } else if (firstLineArray.length != DETAIL_FILE_COLUMN_COUNT ) {
-                 throw new SchemaException("CSV files must contain either " + SIMPLE_FILE_COLUMN_COUNT + " or " +DETAIL_FILE_COLUMN_COUNT + " columns" );
+            } else if (firstLineArray.length != DETAIL_FILE_COLUMN_COUNT) {
+                throw new SchemaException("CSV files must contain either " + SIMPLE_FILE_COLUMN_COUNT + " or " + DETAIL_FILE_COLUMN_COUNT + " columns");
             }
 
             String str;
@@ -113,11 +113,11 @@ public class SchemaService {
 
         Schema createdSchema = operationExecuter.getSchema(graphId);
 
-        return new CreateSchemaResponse(createdSchema, true, createElementsResponse.getEdgeCount(), createElementsResponse.getEdgeTypes());
+        return new CreateSchemaResponse(createdSchema, true, createElementsResponse.getEdgeCount(), createElementsResponse.getRejectedEdgeLoadCount(), createElementsResponse.getEdgeTypes(), createElementsResponse.getNewEdgeGroupCount(), createElementsResponse.getNewEdgeTypes());
 
     }
 
-    public CreateSchemaResponse loadData(Collection<Part> parts, String graphId, String auths) throws IOException, OperationException {
+    public CreateSchemaResponse loadData(Collection<Part> parts, String graphId) throws IOException, OperationException {
 
         LOGGER.info("Loading data into {}", graphId);
 
@@ -127,13 +127,12 @@ public class SchemaService {
 
         GraphData graphData = convertGraphData(parts);
 
-        Schema schema = graph.getSchema();
-
-//        operationExecuter.addGraph(graphId, schema, auths);
+        Schema schema = operationExecuter.getSchema(graphId);
+        Set<String> currentEdgeGroups = schema.getEdgeGroups();
 
         LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
 
-        CreateElementsResponse createElementsResponse = quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile());
+        CreateElementsResponse createElementsResponse = quickStartElementFactory.addElements(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile(), currentEdgeGroups);
 
         operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 
@@ -141,7 +140,7 @@ public class SchemaService {
 
         Schema createdSchema = operationExecuter.getSchema(graphId);
 
-        return new CreateSchemaResponse(createdSchema, true, createElementsResponse.getEdgeCount(), createElementsResponse.getEdgeTypes());
+        return new CreateSchemaResponse(createdSchema, true, createElementsResponse.getEdgeCount(), createElementsResponse.getRejectedEdgeLoadCount(), createElementsResponse.getEdgeTypes(), createElementsResponse.getNewEdgeGroupCount(), createElementsResponse.getNewEdgeTypes());
 
     }
 }

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.data.element.Edge;
 import uk.gov.gchq.gaffer.data.element.Element;
+import uk.gov.gchq.gaffer.data.elementdefinition.exception.SchemaException;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
 import uk.gov.gchq.gaffer.utils.upload.domain.CreateElementsResponse;
 
@@ -76,12 +77,12 @@ public class QuickStartElementFactory {
         edgeTypes.add(edgeArray[EDGE_TYPE]);
     }
 
-
     public CreateElementsResponse createEdgesAndEntities(List<String> stringEdges, String delimiter, boolean simpleFile) {
 
         List<Element> elements = new ArrayList<>();
         Set<String> edgeTypes = new HashSet<>();
         int edgeCounts = 0;
+        int rejectedEdgeLoadCount = 0;
 
         for (String stringEdge : stringEdges) {
 
@@ -102,11 +103,58 @@ public class QuickStartElementFactory {
 
             } catch (Exception e) {
                 LOGGER.error("failed to load {} ", stringEdge, e);
+                rejectedEdgeLoadCount++;
             }
         }
 
         LOGGER.info("Successfully loaded {} elements ", elements.size());
 
-        return new CreateElementsResponse(elements, edgeTypes, edgeCounts);
+        return new CreateElementsResponse(elements, edgeTypes, edgeCounts, rejectedEdgeLoadCount,0, new HashSet<>());
+    }
+
+    public CreateElementsResponse addElements(List<String> stringEdges, String delimiter, boolean simpleFile, Set<String> currentEdgeGroups) {
+
+        List<Element> elements = new ArrayList<>();
+        Set<String> edgeTypes = new HashSet<>();
+        Set<String> newEdgeTypes = new HashSet<>();
+        int edgeCounts = 0;
+        int rejectedEdgeLoadCount = 0;
+        int newEdgeGroupCount = 0;
+
+        for (String stringEdge : stringEdges) {
+
+            try {
+
+                String[] edgeArray = stringEdge.split(delimiter);
+
+                if (edgeArray.length < 2) {
+                    continue;
+                }
+
+                String edgeType = edgeArray[EDGE_TYPE];
+
+                if (!currentEdgeGroups.contains(edgeType)) {
+                    LOGGER.warn("Got new edge type of {} ", edgeType);
+                    newEdgeGroupCount++;
+                    newEdgeTypes.add(edgeType);
+                    throw new SchemaException("Attempting to add an unrecognised edge type " + edgeType);
+                }
+
+                if (simpleFile) {
+                    mapSimpleEdge(edgeArray, elements, edgeTypes);
+                } else {
+                    mapDetailEdge(edgeArray, elements, edgeTypes);
+                }
+                edgeCounts++;
+
+            } catch (Exception e) {
+                LOGGER.error("failed to load {} ", stringEdge, e);
+                rejectedEdgeLoadCount++;
+            }
+        }
+
+        LOGGER.info("Successfully loaded {} elements ", elements.size());
+
+        return new CreateElementsResponse(elements, edgeTypes, edgeCounts, rejectedEdgeLoadCount, newEdgeGroupCount, newEdgeTypes);
     }
 }

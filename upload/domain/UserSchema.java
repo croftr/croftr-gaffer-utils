@@ -18,6 +18,10 @@ public class UserSchema {
         this.types = types;
     }
 
+    public void addEdge(String edgeName, SchemaEdgeDefinition edgeDefintion) {
+        edges.put(edgeName, edgeDefintion);
+    }
+
     public Map<String, SchemaEdgeDefinition> getEdges() {
         return edges;
     }
