@@ -131,7 +131,7 @@ public class QuickStartElementFactory {
                     continue;
                 }
 
-                String edgeType = edgeArray[EDGE_TYPE];
+                String edgeType = simpleFile ? DEFAULT_EDGE_TYPE : edgeArray[EDGE_TYPE];
 
                 if (!currentEdgeGroups.contains(edgeType)) {
                     LOGGER.warn("Got new edge type of {} ", edgeType);

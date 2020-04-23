@@ -113,7 +113,9 @@ public class SchemaService {
 
         Schema createdSchema = operationExecuter.getSchema(graphId);
 
-        return new CreateSchemaResponse(createdSchema, true, createElementsResponse.getEdgeCount(), createElementsResponse.getRejectedEdgeLoadCount(), createElementsResponse.getEdgeTypes(), createElementsResponse.getNewEdgeGroupCount(), createElementsResponse.getNewEdgeTypes());
+        boolean success = createElementsResponse.getEdgeCount() > 0;
+
+        return new CreateSchemaResponse(createdSchema, success, createElementsResponse.getEdgeCount(), createElementsResponse.getRejectedEdgeLoadCount(), createElementsResponse.getEdgeTypes(), createElementsResponse.getNewEdgeGroupCount(), createElementsResponse.getNewEdgeTypes());
 
     }
 
@@ -140,7 +142,9 @@ public class SchemaService {
 
         Schema createdSchema = operationExecuter.getSchema(graphId);
 
-        return new CreateSchemaResponse(createdSchema, true, createElementsResponse.getEdgeCount(), createElementsResponse.getRejectedEdgeLoadCount(), createElementsResponse.getEdgeTypes(), createElementsResponse.getNewEdgeGroupCount(), createElementsResponse.getNewEdgeTypes());
+        boolean success = createElementsResponse.getEdgeCount() > 0;
+
+        return new CreateSchemaResponse(createdSchema, success, createElementsResponse.getEdgeCount(), createElementsResponse.getRejectedEdgeLoadCount(), createElementsResponse.getEdgeTypes(), createElementsResponse.getNewEdgeGroupCount(), createElementsResponse.getNewEdgeTypes());
 
     }
 }
