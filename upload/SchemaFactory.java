@@ -9,11 +9,14 @@ import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.sketches.clearspring.cardinality.binaryoperator.HyperLogLogPlusAggregator;
 import uk.gov.gchq.gaffer.sketches.clearspring.cardinality.serialisation.HyperLogLogPlusSerialiser;
 import uk.gov.gchq.gaffer.store.schema.*;
+import uk.gov.gchq.gaffer.types.FreqMap;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
+import uk.gov.gchq.gaffer.types.function.FreqMapAggregator;
 import uk.gov.gchq.gaffer.utils.upload.domain.UserSchema;
 import uk.gov.gchq.koryphe.ValidationResult;
 import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
 import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
+import uk.gov.gchq.koryphe.impl.predicate.Exists;
 import uk.gov.gchq.koryphe.impl.predicate.IsFalse;
 import uk.gov.gchq.koryphe.impl.predicate.IsTrue;
 
@@ -64,14 +67,15 @@ public class SchemaFactory {
         } else if (clazz.equals(HyperLogLogPlus.class)) {
             builder.aggregateFunction(new HyperLogLogPlusAggregator());
             builder.serialiser(new HyperLogLogPlusSerialiser());
+        } else if (clazz.equals(FreqMap.class)) {
+            builder.aggregateFunction(new FreqMapAggregator());
         }
 
         if (predicate != null) {
             builder.validateFunctions(predicate);
         }
 
-        TypeDefinition typeDefinition = builder.build();
-        typeDefinition.setClazz(clazz);
+        TypeDefinition typeDefinition = builder.clazz(clazz).build();
 
         return typeDefinition;
     }
@@ -81,17 +85,6 @@ public class SchemaFactory {
         Map<String, TypeDefinition> types = new HashMap<>();
         Map<String, SchemaEdgeDefinition> edges = new HashMap<>();
         Map<String, SchemaEntityDefinition> entities = new HashMap<>();
-
-        edgeTypes.forEach(edgeType -> {
-            SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", "A test edge");
-            edges.put(edgeType, schemaEdgeDefinition);
-        });
-
-        SchemaEntityDefinition nodeStatsEntity = createSchemaEntity("countValue", "count");
-        entities.put("nodeStats", nodeStatsEntity);
-
-        SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");
-        entities.put("cardinality", hyperloglogplusEntity);
 
         TypeDefinition vertexType = createSchemaType(TypeSubTypeValue.class, null);
         types.put("node", vertexType);
@@ -108,6 +101,23 @@ public class SchemaFactory {
         TypeDefinition hyperloglogplus = createSchemaType(HyperLogLogPlus.class, null);
         types.put("hyperloglogplus", hyperloglogplus);
 
+        TypeDefinition edgeGroupCounts = createSchemaType(FreqMap.class, new Exists());
+        types.put("counts.freqmap", edgeGroupCounts);
+
+        edgeTypes.forEach(edgeType -> {
+            SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", EgeUtils.getDescription(edgeType));
+            edges.put(edgeType, schemaEdgeDefinition);
+        });
+
+        SchemaEntityDefinition nodeStatsEntity = createSchemaEntity("countValue", "count");
+        entities.put("nodeStats", nodeStatsEntity);
+
+        SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");
+        entities.put("cardinality", hyperloglogplusEntity);
+
+        SchemaEntityDefinition edgeGroupCountsEntity = createSchemaEntity("edgeGroupCounts", "counts.freqmap");
+        entities.put("edgeGroupCounts", edgeGroupCountsEntity);
+
         UserSchema userSchema = new UserSchema(edges, entities, types);
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);
         schema = Schema.fromJson(jsonBytes);
@@ -115,13 +125,12 @@ public class SchemaFactory {
         ValidationResult validationResult = schema.validate();
 
         if (!validationResult.isValid()) {
-            throw new SchemaException("Schema has failed validation");
+            throw new SchemaException("Schema has failed validation " + validationResult.getErrorString());
         }
 
         LOGGER.info("Successfully created Schema");
 
         return schema;
     }
-
 
 }

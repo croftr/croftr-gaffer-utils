@@ -65,7 +65,6 @@ public class OperationExecuter {
                 .storeProperties(storeProperties)
                 .build();
 
-
         printOperation(addGraph);
 
         graph.execute(addGraph, user);
