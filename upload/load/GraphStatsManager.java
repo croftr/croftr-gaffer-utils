@@ -21,12 +21,11 @@ public class GraphStatsManager {
         edgeCountsVertex.setValue("graphInfoVertex");
     }
 
-    public Element setCreatedGraphStats(FreqMap freqMap) {
+    public Element setCreatedGraphStats() {
 
         Entity edgeGroupCounts = new Entity.Builder()
-                .group("graphInfo")
+                .group("graphCreation")
                 .vertex(edgeCountsVertex)
-                .property("edgeGroupCounts", freqMap)
                 .property("createdDate", new Date())
                 .property("createdBy", "Rob Croft")
                 .build();
@@ -38,7 +37,7 @@ public class GraphStatsManager {
     public Element updateGraphStats(FreqMap freqMap) {
 
         Entity edgeGroupCounts = new Entity.Builder()
-                .group("graphInfo")
+                .group("graphStatus")
                 .vertex(edgeCountsVertex)
                 .property("edgeGroupCounts", freqMap)
                 .build();

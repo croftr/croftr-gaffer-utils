@@ -132,13 +132,18 @@ public class SchemaFactory {
         SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");
         entities.put("cardinality", hyperloglogplusEntity);
 
-        //graph stats
+        //graph creation stats
+        Map<String, String> createdProperties = new HashMap<>();
+        createdProperties.put("createdDate", "date.created");
+        createdProperties.put("createdBy", "user.created");
+        SchemaEntityDefinition graphCreatedEntity = createSchemaEntity(createdProperties);
+        entities.put("graphCreation", graphCreatedEntity);
+
+        //graph status stats
         Map<String, String> statsProperties = new HashMap<>();
         statsProperties.put("edgeGroupCounts", "counts.freqmap");
-        statsProperties.put("createdDate", "date.created");
-        statsProperties.put("createdBy", "user.created");
-        SchemaEntityDefinition graphInfoEntity = createSchemaEntity(statsProperties);
-        entities.put("graphInfo", graphInfoEntity);
+        SchemaEntityDefinition graphStatusEntity = createSchemaEntity(statsProperties);
+        entities.put("graphStatus", graphStatusEntity);
 
         UserSchema userSchema = new UserSchema(edges, entities, types);
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);

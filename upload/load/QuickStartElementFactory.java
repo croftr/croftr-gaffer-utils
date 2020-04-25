@@ -111,7 +111,8 @@ public class QuickStartElementFactory {
             }
         }
 
-        elements.add(graphStatsManager.setCreatedGraphStats(freqMap));
+        elements.add(graphStatsManager.setCreatedGraphStats());
+        elements.add(graphStatsManager.updateGraphStats(freqMap));
 
         LOGGER.info("Successfully loaded {} elements ", elements.size());
 
