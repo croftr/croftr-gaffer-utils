@@ -28,6 +28,7 @@ public class GraphStatsManager {
                 .vertex(edgeCountsVertex)
                 .property("edgeGroupCounts", freqMap)
                 .property("createdDate", new Date())
+                .property("createdBy", "Rob Croft")
                 .build();
 
         LOGGER.info("created entity for new graph {} ", edgeGroupCounts.getGroup() );

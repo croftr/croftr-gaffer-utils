@@ -14,9 +14,7 @@ import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
 import uk.gov.gchq.gaffer.types.function.FreqMapAggregator;
 import uk.gov.gchq.gaffer.utils.upload.domain.UserSchema;
 import uk.gov.gchq.koryphe.ValidationResult;
-import uk.gov.gchq.koryphe.impl.binaryoperator.Max;
-import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
-import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
+import uk.gov.gchq.koryphe.impl.binaryoperator.*;
 import uk.gov.gchq.koryphe.impl.predicate.Exists;
 import uk.gov.gchq.koryphe.impl.predicate.IsFalse;
 import uk.gov.gchq.koryphe.impl.predicate.IsTrue;
@@ -71,7 +69,7 @@ public class SchemaFactory {
         TypeDefinition.Builder builder = new TypeDefinition.Builder();
 
         if (clazz.equals(String.class)) {
-            builder.aggregateFunction(new StringConcat());
+            builder.aggregateFunction(new Last());
         } else if (clazz.equals(Integer.class)) {
             builder.aggregateFunction(new Sum());
         } else if (clazz.equals(TypeSubTypeValue.class)) {
@@ -115,11 +113,13 @@ public class SchemaFactory {
         TypeDefinition hyperloglogplus = createSchemaType(HyperLogLogPlus.class, null);
         types.put("hyperloglogplus", hyperloglogplus);
 
+        //graph stats
         TypeDefinition edgeGroupCounts = createSchemaType(FreqMap.class, new Exists());
         types.put("counts.freqmap", edgeGroupCounts);
-
         TypeDefinition createdDate = createSchemaType(Date.class, null);
         types.put("date.created", createdDate);
+        TypeDefinition createdBy = createSchemaType(String.class, null);
+        types.put("user.created", createdBy);
 
         edgeTypes.forEach(edgeType -> {
             SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", EgeUtils.getDescription(edgeType));
@@ -132,9 +132,11 @@ public class SchemaFactory {
         SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");
         entities.put("cardinality", hyperloglogplusEntity);
 
+        //graph stats
         Map<String, String> statsProperties = new HashMap<>();
         statsProperties.put("edgeGroupCounts", "counts.freqmap");
         statsProperties.put("createdDate", "date.created");
+        statsProperties.put("createdBy", "user.created");
         SchemaEntityDefinition graphInfoEntity = createSchemaEntity(statsProperties);
         entities.put("graphInfo", graphInfoEntity);
 
