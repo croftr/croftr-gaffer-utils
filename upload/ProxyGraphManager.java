@@ -1,12 +1,11 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
-import uk.gov.gchq.gaffer.federatedstore.FederatedStoreConstants;
 import uk.gov.gchq.gaffer.graph.Graph;
 import uk.gov.gchq.gaffer.proxystore.ProxyStore;
 
-public class GraphManager {
+public class ProxyGraphManager {
 
-    public GraphManager() {
+    public ProxyGraphManager() {
         System.setProperty("gaffer.serialiser.json.modules", "uk.gov.gchq.gaffer.sketches.serialisation.json.SketchesJsonModules");
     }
 

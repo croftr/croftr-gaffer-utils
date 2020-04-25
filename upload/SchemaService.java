@@ -93,8 +93,8 @@ public class SchemaService {
 
     public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId, String auths) throws IOException, OperationException {
 
-        GraphManager graphManager = new GraphManager();
-        Graph graph = graphManager.getExistingGraph("");
+        ProxyGraphManager proxyGraphManager = new ProxyGraphManager();
+        Graph graph = proxyGraphManager.getExistingGraph("");
         operationExecuter = new OperationExecuter(graph, user);
 
         GraphData graphData = convertGraphData(parts);
@@ -123,8 +123,8 @@ public class SchemaService {
 
         LOGGER.info("Loading data into {}", graphId);
 
-        GraphManager graphManager = new GraphManager();
-        Graph graph = graphManager.getExistingGraph(graphId);
+        ProxyGraphManager proxyGraphManager = new ProxyGraphManager();
+        Graph graph = proxyGraphManager.getExistingGraph(graphId);
         operationExecuter = new OperationExecuter(graph, user);
 
         GraphData graphData = convertGraphData(parts);

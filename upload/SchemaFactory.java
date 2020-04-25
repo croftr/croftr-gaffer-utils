@@ -14,15 +14,14 @@ import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
 import uk.gov.gchq.gaffer.types.function.FreqMapAggregator;
 import uk.gov.gchq.gaffer.utils.upload.domain.UserSchema;
 import uk.gov.gchq.koryphe.ValidationResult;
+import uk.gov.gchq.koryphe.impl.binaryoperator.Max;
 import uk.gov.gchq.koryphe.impl.binaryoperator.StringConcat;
 import uk.gov.gchq.koryphe.impl.binaryoperator.Sum;
 import uk.gov.gchq.koryphe.impl.predicate.Exists;
 import uk.gov.gchq.koryphe.impl.predicate.IsFalse;
 import uk.gov.gchq.koryphe.impl.predicate.IsTrue;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class SchemaFactory {
@@ -55,6 +54,19 @@ public class SchemaFactory {
         return schemaEntityDefinition;
     }
 
+    private SchemaEntityDefinition createSchemaEntity(Map<String, String> properties) {
+        SchemaEntityDefinition.Builder builder = new SchemaEntityDefinition.Builder();
+        builder.vertex("node");
+
+        properties.keySet().forEach(key -> {
+            builder.property(key, properties.get(key));
+        });
+
+        SchemaEntityDefinition schemaEntityDefinition = builder.build();
+
+        return schemaEntityDefinition;
+    }
+
     private TypeDefinition createSchemaType(Class<?> clazz, Predicate predicate) {
         TypeDefinition.Builder builder = new TypeDefinition.Builder();
 
@@ -69,6 +81,8 @@ public class SchemaFactory {
             builder.serialiser(new HyperLogLogPlusSerialiser());
         } else if (clazz.equals(FreqMap.class)) {
             builder.aggregateFunction(new FreqMapAggregator());
+        } else if (clazz.equals(Date.class)) {
+            builder.aggregateFunction(new Max());
         }
 
         if (predicate != null) {
@@ -104,6 +118,9 @@ public class SchemaFactory {
         TypeDefinition edgeGroupCounts = createSchemaType(FreqMap.class, new Exists());
         types.put("counts.freqmap", edgeGroupCounts);
 
+        TypeDefinition createdDate = createSchemaType(Date.class, null);
+        types.put("date.created", createdDate);
+
         edgeTypes.forEach(edgeType -> {
             SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", EgeUtils.getDescription(edgeType));
             edges.put(edgeType, schemaEdgeDefinition);
@@ -115,8 +132,11 @@ public class SchemaFactory {
         SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");
         entities.put("cardinality", hyperloglogplusEntity);
 
-        SchemaEntityDefinition edgeGroupCountsEntity = createSchemaEntity("edgeGroupCounts", "counts.freqmap");
-        entities.put("edgeGroupCounts", edgeGroupCountsEntity);
+        Map<String, String> statsProperties = new HashMap<>();
+        statsProperties.put("edgeGroupCounts", "counts.freqmap");
+        statsProperties.put("createdDate", "date.created");
+        SchemaEntityDefinition graphInfoEntity = createSchemaEntity(statsProperties);
+        entities.put("graphInfo", graphInfoEntity);
 
         UserSchema userSchema = new UserSchema(edges, entities, types);
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);

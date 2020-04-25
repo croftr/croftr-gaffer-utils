@@ -5,13 +5,11 @@ import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.data.element.Edge;
 import uk.gov.gchq.gaffer.data.element.Element;
 import uk.gov.gchq.gaffer.data.elementdefinition.exception.SchemaException;
+import uk.gov.gchq.gaffer.types.FreqMap;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
 import uk.gov.gchq.gaffer.utils.upload.domain.CreateElementsResponse;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static uk.gov.gchq.gaffer.utils.upload.CsvMapper.*;
 
@@ -20,9 +18,11 @@ public class QuickStartElementFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(QuickStartElementFactory.class);
 
     private CentralityManager centralityManager;
+    private GraphStatsManager graphStatsManager;
 
     public QuickStartElementFactory() {
         centralityManager = new CentralityManager();
+        graphStatsManager = new GraphStatsManager();
     }
 
     private void mapSimpleEdge(String[] edgeArray, List<Element> elements, Set<String> edgeTypes) {
@@ -81,6 +81,7 @@ public class QuickStartElementFactory {
 
         List<Element> elements = new ArrayList<>();
         Set<String> edgeTypes = new HashSet<>();
+        FreqMap freqMap = new FreqMap(new HashMap());
         int edgeCounts = 0;
         int rejectedEdgeLoadCount = 0;
 
@@ -89,6 +90,9 @@ public class QuickStartElementFactory {
             try {
 
                 String[] edgeArray = stringEdge.split(delimiter);
+
+                String edgeType = simpleFile ? DEFAULT_EDGE_TYPE : edgeArray[EDGE_TYPE];
+                freqMap.upsert(edgeType, 1l);
 
                 if (edgeArray.length < 2) {
                     continue;
@@ -107,6 +111,8 @@ public class QuickStartElementFactory {
             }
         }
 
+        elements.add(graphStatsManager.setCreatedGraphStats(freqMap));
+
         LOGGER.info("Successfully loaded {} elements ", elements.size());
 
         return new CreateElementsResponse(elements, edgeTypes, edgeCounts, rejectedEdgeLoadCount,0, new HashSet<>());
@@ -117,6 +123,7 @@ public class QuickStartElementFactory {
         List<Element> elements = new ArrayList<>();
         Set<String> edgeTypes = new HashSet<>();
         Set<String> newEdgeTypes = new HashSet<>();
+        FreqMap freqMap = new FreqMap(new HashMap());
         int edgeCounts = 0;
         int rejectedEdgeLoadCount = 0;
         int newEdgeGroupCount = 0;
@@ -145,6 +152,9 @@ public class QuickStartElementFactory {
                 } else {
                     mapDetailEdge(edgeArray, elements, edgeTypes);
                 }
+
+                freqMap.upsert(edgeType, 1l);
+
                 edgeCounts++;
 
             } catch (Exception e) {
@@ -152,6 +162,8 @@ public class QuickStartElementFactory {
                 rejectedEdgeLoadCount++;
             }
         }
+
+        elements.add(graphStatsManager.updateGraphStats(freqMap));
 
         LOGGER.info("Successfully loaded {} elements ", elements.size());
 
