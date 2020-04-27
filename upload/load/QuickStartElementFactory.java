@@ -7,6 +7,7 @@ import uk.gov.gchq.gaffer.data.element.Element;
 import uk.gov.gchq.gaffer.data.elementdefinition.exception.SchemaException;
 import uk.gov.gchq.gaffer.types.FreqMap;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
+import uk.gov.gchq.gaffer.user.User;
 import uk.gov.gchq.gaffer.utils.upload.domain.CreateElementsResponse;
 
 import java.util.*;
@@ -77,7 +78,7 @@ public class QuickStartElementFactory {
         edgeTypes.add(edgeArray[EDGE_TYPE]);
     }
 
-    public CreateElementsResponse createEdgesAndEntities(List<String> stringEdges, String delimiter, boolean simpleFile, String description) {
+    public CreateElementsResponse createEdgesAndEntities(List<String> stringEdges, String delimiter, boolean simpleFile, String description, User user) {
 
         List<Element> elements = new ArrayList<>();
         Set<String> edgeTypes = new HashSet<>();
@@ -111,7 +112,7 @@ public class QuickStartElementFactory {
             }
         }
 
-        elements.add(graphStatsManager.setCreatedGraphStats(description));
+        elements.add(graphStatsManager.setCreatedGraphStats(description, user));
         elements.add(graphStatsManager.updateGraphStats(freqMap));
 
         LOGGER.info("Successfully loaded {} elements ", elements.size());

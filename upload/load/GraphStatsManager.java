@@ -6,6 +6,7 @@ import uk.gov.gchq.gaffer.data.element.Element;
 import uk.gov.gchq.gaffer.data.element.Entity;
 import uk.gov.gchq.gaffer.types.FreqMap;
 import uk.gov.gchq.gaffer.types.TypeSubTypeValue;
+import uk.gov.gchq.gaffer.user.User;
 
 import java.util.Date;
 
@@ -22,8 +23,8 @@ public class GraphStatsManager {
 
     private static final String GRAPH_CREATION = "graphCreation";
     private static final String CREATED_DATE_PROPERTY = "createdDate";
-    private static final String CREATED_BY_PROPERTY = "graphCreation";
-    private static final String DESCRIPTION_PROPERTY = "graphCreation";
+    private static final String CREATED_BY_PROPERTY = "createdBy";
+    private static final String DESCRIPTION_PROPERTY = "description";
 
     private static final String GRAPH_STATUS = "graphStatus";
     private static final String EDGE_GROUPS_PROPERTY = "edgeGroupCounts";
@@ -35,13 +36,13 @@ public class GraphStatsManager {
         edgeCountsVertex.setValue("graphInfoVertex");
     }
 
-    public Element setCreatedGraphStats(String description) {
+    public Element setCreatedGraphStats(String description, User user) {
 
         Entity edgeGroupCounts = new Entity.Builder()
                 .group(GRAPH_CREATION)
                 .vertex(edgeCountsVertex)
                 .property(CREATED_DATE_PROPERTY, new Date())
-                .property(CREATED_BY_PROPERTY, "Rob Croft")
+                .property(CREATED_BY_PROPERTY, user.getUserId())
                 .property(DESCRIPTION_PROPERTY, description)
                 .build();
 

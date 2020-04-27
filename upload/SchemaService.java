@@ -32,7 +32,7 @@ public class SchemaService {
     private User user;
 
     public SchemaService() {
-        user = new User();
+        user = new User("Bobby Croft");
         schemaFactory = new SchemaDefinitionFactory();
         proxyGraphManager = new ProxyGraphManager();
         quickStartElementFactory = new QuickStartElementFactory();
@@ -59,7 +59,8 @@ public class SchemaService {
 
         operationExecuter.addGraph(graphId, schema, auths);
 
-        CreateElementsResponse createElementsResponse = quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), DELIMITER, graphData.isSimpleFile(), description);
+        CreateElementsResponse createElementsResponse =
+                quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), DELIMITER, graphData.isSimpleFile(), description, user);
 
         operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 
