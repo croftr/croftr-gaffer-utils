@@ -24,11 +24,10 @@ public class LoadCsvDataResource extends HttpServlet {
 
     private SchemaService schemaService;
 
-    public void init() throws ServletException {
+    public void init() {
         schemaService = new SchemaService();
     }
 
-    //    http://localhost:8080/rest/shortestPath?node1=61&node2=7
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -37,27 +36,13 @@ public class LoadCsvDataResource extends HttpServlet {
         try {
             createSchemaResponse = schemaService.loadData(request.getParts(), schemaName);
         } catch (OperationException e) {
-            e.printStackTrace();
+            LOGGER.error("Error loading data into graph ", e);
         }
 
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
         byte[] jsonBytes = JSONSerialiser.serialise(createSchemaResponse, true);
         out.println(new String(jsonBytes));
-    }
-
-//    //for Preflight
-//    @Override
-//    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-//            throws ServletException, IOException {
-//        System.out.println("OPTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//        setAccessControlHeaders(resp);
-//        resp.setStatus(HttpServletResponse.SC_OK);
-//    }
-
-    private void setAccessControlHeaders(HttpServletResponse resp) {
-        resp.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-        resp.setHeader("Access-Control-Allow-Methods", "POST");
     }
 
     public void destroy() {

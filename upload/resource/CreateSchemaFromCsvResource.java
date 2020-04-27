@@ -17,17 +17,16 @@ import java.io.*;
 @MultipartConfig(fileSizeThreshold = 1024 * 1024,
         maxFileSize = 1024 * 1024 * 5,
         maxRequestSize = 1024 * 1024 * 5 * 5)
-public class LoadCsvResource extends HttpServlet {
+public class CreateSchemaFromCsvResource extends HttpServlet {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoadCsvResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaFromCsvResource.class);
 
     private SchemaService schemaService;
 
-    public void init() throws ServletException {
+    public void init() {
         schemaService = new SchemaService();
     }
 
-    //    http://localhost:8080/rest/shortestPath?node1=61&node2=7
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String schemaName = request.getParameter("name");
@@ -38,27 +37,13 @@ public class LoadCsvResource extends HttpServlet {
         try {
             createSchemaResponse = schemaService.createSchemaFromData(request.getParts(), schemaName, auths, description);
         } catch (OperationException e) {
-            e.printStackTrace();
+            LOGGER.error("Error creating graph from CSV file ", e);
         }
 
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
         byte[] jsonBytes = JSONSerialiser.serialise(createSchemaResponse, true);
         out.println(new String(jsonBytes));
-    }
-
-//    //for Preflight
-//    @Override
-//    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-//            throws ServletException, IOException {
-//        System.out.println("OPTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//        setAccessControlHeaders(resp);
-//        resp.setStatus(HttpServletResponse.SC_OK);
-//    }
-
-    private void setAccessControlHeaders(HttpServletResponse resp) {
-        resp.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-        resp.setHeader("Access-Control-Allow-Methods", "POST");
     }
 
     public void destroy() {
