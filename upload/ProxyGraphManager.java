@@ -3,6 +3,9 @@ package uk.gov.gchq.gaffer.utils.upload;
 import uk.gov.gchq.gaffer.graph.Graph;
 import uk.gov.gchq.gaffer.proxystore.ProxyStore;
 
+/**
+ * Get the instance of the currently running graph
+ */
 public class ProxyGraphManager {
 
     public ProxyGraphManager() {
@@ -13,7 +16,7 @@ public class ProxyGraphManager {
 
         Graph graph = new Graph.Builder()
                 .store(new ProxyStore.Builder()
-                        .graphId(graphId)  // for some reason this is needed
+                        .graphId(graphId)
                         .host("localhost")
                         .port(8080)
                         .contextRoot("rest")

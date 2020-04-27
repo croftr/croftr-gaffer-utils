@@ -22,12 +22,21 @@ import uk.gov.gchq.koryphe.impl.predicate.IsTrue;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class SchemaFactory {
+/**
+ * Create the Element types, Edge types and Entity types for the base
+ * schema create on CSV upload
+ */
+public class SchemaDefinitionFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SchemaFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchemaDefinitionFactory.class);
 
-    private Schema schema;
-
+    /**
+     * Create schema edge type
+     * @param source the source node of the egde
+     * @param destination the destination node of the edge
+     * @param description the description of the egde
+     * @return the created edge
+     */
     public SchemaEdgeDefinition createSchemaEdge(String source, String destination, String description) {
         SchemaEdgeDefinition.Builder builder = new SchemaEdgeDefinition.Builder();
 
@@ -41,17 +50,11 @@ public class SchemaFactory {
         return schemaEdgeDefinition;
     }
 
-    private SchemaEntityDefinition createSchemaEntity(String propertyName, String propertyType) {
-        SchemaEntityDefinition.Builder builder = new SchemaEntityDefinition.Builder();
-
-        builder.vertex("node");
-        builder.property(propertyName, propertyType);
-
-        SchemaEntityDefinition schemaEntityDefinition = builder.build();
-
-        return schemaEntityDefinition;
-    }
-
+    /**
+     * Create the entity
+     * @param properties of the entity
+     * @return the created entity
+     */
     private SchemaEntityDefinition createSchemaEntity(Map<String, String> properties) {
         SchemaEntityDefinition.Builder builder = new SchemaEntityDefinition.Builder();
         builder.vertex("node");
@@ -65,15 +68,20 @@ public class SchemaFactory {
         return schemaEntityDefinition;
     }
 
+    /**
+     * Create type definintion
+     * @param clazz the class to be used for the type
+     * @param predicate to be used for the type
+     * @return the created type
+     */
     private TypeDefinition createSchemaType(Class<?> clazz, Predicate predicate) {
+
         TypeDefinition.Builder builder = new TypeDefinition.Builder();
 
         if (clazz.equals(String.class)) {
             builder.aggregateFunction(new Last());
         } else if (clazz.equals(Integer.class)) {
             builder.aggregateFunction(new Sum());
-        } else if (clazz.equals(TypeSubTypeValue.class)) {
-            //no agg function needed for these
         } else if (clazz.equals(HyperLogLogPlus.class)) {
             builder.aggregateFunction(new HyperLogLogPlusAggregator());
             builder.serialiser(new HyperLogLogPlusSerialiser());
@@ -92,12 +100,20 @@ public class SchemaFactory {
         return typeDefinition;
     }
 
+    /**
+     * Create the schema
+     *
+     * @param edgeTypes the types of edges to be defined for the schema
+     * @return the created schema
+     * @throws SerialisationException
+     */
     public Schema createSchema(Set<String> edgeTypes) throws SerialisationException {
 
         Map<String, TypeDefinition> types = new HashMap<>();
         Map<String, SchemaEdgeDefinition> edges = new HashMap<>();
         Map<String, SchemaEntityDefinition> entities = new HashMap<>();
 
+        //create types
         TypeDefinition vertexType = createSchemaType(TypeSubTypeValue.class, null);
         types.put("node", vertexType);
 
@@ -123,15 +139,18 @@ public class SchemaFactory {
         TypeDefinition description = createSchemaType(String.class, null);
         types.put("graph.description", description);
 
+        //create edges
         edgeTypes.forEach(edgeType -> {
-            SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", EgeUtils.getDescription(edgeType));
+            String edgeDescription = edgeType + " Edge " + EgeCategories.getCategory(edgeType);
+            SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", edgeDescription);
             edges.put(edgeType, schemaEdgeDefinition);
         });
 
-        SchemaEntityDefinition nodeStatsEntity = createSchemaEntity("countValue", "count");
+        //create entities
+        SchemaEntityDefinition nodeStatsEntity = createSchemaEntity(Collections.singletonMap("countValue", "count"));
         entities.put("nodeStats", nodeStatsEntity);
 
-        SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity("approxCardinality", "hyperloglogplus");
+        SchemaEntityDefinition hyperloglogplusEntity = createSchemaEntity(Collections.singletonMap("approxCardinality", "hyperloglogplus"));
         entities.put("cardinality", hyperloglogplusEntity);
 
         //graph creation stats
@@ -150,7 +169,7 @@ public class SchemaFactory {
 
         UserSchema userSchema = new UserSchema(edges, entities, types);
         byte[] jsonBytes = JSONSerialiser.serialise(userSchema, true);
-        schema = Schema.fromJson(jsonBytes);
+        Schema schema = Schema.fromJson(jsonBytes);
 
         ValidationResult validationResult = schema.validate();
 

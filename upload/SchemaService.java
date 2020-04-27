@@ -2,110 +2,64 @@ package uk.gov.gchq.gaffer.utils.upload;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.gchq.gaffer.data.elementdefinition.exception.SchemaException;
 import uk.gov.gchq.gaffer.graph.Graph;
 import uk.gov.gchq.gaffer.operation.OperationException;
 import uk.gov.gchq.gaffer.store.schema.Schema;
 import uk.gov.gchq.gaffer.user.User;
-import uk.gov.gchq.gaffer.utils.load.LoadInput;
 import uk.gov.gchq.gaffer.utils.upload.domain.CreateElementsResponse;
 import uk.gov.gchq.gaffer.utils.upload.domain.CreateSchemaResponse;
 import uk.gov.gchq.gaffer.utils.upload.domain.GraphData;
 import uk.gov.gchq.gaffer.utils.upload.load.QuickStartElementFactory;
 
 import javax.servlet.http.Part;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 
-import static uk.gov.gchq.gaffer.utils.upload.CsvMapper.*;
-
+/**
+ * Entry point for creating a schema from a csv file
+ * or loading data into an existing schema from a csv file
+ */
 public class SchemaService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaService.class);
 
-    private static final int SIMPLE_FILE_COLUMN_COUNT = 2;
-    private static final int DETAIL_FILE_COLUMN_COUNT = 9;
+    private static final String DELIMITER = ",";
 
-    private SchemaFactory schemaFactory;
+    private SchemaDefinitionFactory schemaFactory;
     private OperationExecuter operationExecuter;
     private QuickStartElementFactory quickStartElementFactory;
+    private ProxyGraphManager proxyGraphManager;
     private User user;
 
     public SchemaService() {
         user = new User();
-        schemaFactory = new SchemaFactory();
+        schemaFactory = new SchemaDefinitionFactory();
+        proxyGraphManager = new ProxyGraphManager();
         quickStartElementFactory = new QuickStartElementFactory();
     }
 
-    private String getFileName(Part part) {
-        String contentDisposition = part.getHeader("content-disposition");
-
-        if (contentDisposition != null) {
-            for (String content : contentDisposition.split(";")) {
-                if (content.trim().startsWith("filename"))
-                    return content.substring(content.indexOf("=") + 2, content.length() - 1);
-            }
-        }
-
-        return "default.csv";
-    }
-
-    private GraphData convertGraphData(Collection<Part> parts) throws IOException {
-
-        String fileName = null;
-        boolean isSimpleFile = false;
-        List<String> edges = new ArrayList<>();
-        Set<String> edgeTypes = new HashSet<>();
-
-        for (Part part : parts) {
-
-            fileName = getFileName(part);
-
-            InputStream inputStream = part.getInputStream();
-            //creating an InputStreamReader object
-            InputStreamReader isReader = new InputStreamReader(inputStream);
-            //Creating a BufferedReader object
-            BufferedReader reader = new BufferedReader(isReader);
-
-            String firstLine = reader.readLine();
-            String[] firstLineArray = firstLine.split(",");
-            if (firstLineArray.length == SIMPLE_FILE_COLUMN_COUNT) {
-                isSimpleFile = true;
-            } else if (firstLineArray.length != DETAIL_FILE_COLUMN_COUNT) {
-                throw new SchemaException("CSV files must contain either " + SIMPLE_FILE_COLUMN_COUNT + " or " + DETAIL_FILE_COLUMN_COUNT + " columns");
-            }
-
-            String str;
-            while ((str = reader.readLine()) != null) {
-                String[] edgeArray = str.split(",");
-                String edgeType = isSimpleFile ? DEFAULT_EDGE_TYPE : edgeArray[EDGE_TYPE];
-                edgeTypes.add(edgeType);
-                edges.add(str);
-            }
-        }
-
-        return new GraphData(fileName, edges, edgeTypes, isSimpleFile);
-
-    }
-
+    /**
+     *
+     * @param parts containing the file data to be loaded into the graph from the multipart/form-data POST request
+     * @param graphId id of the graph to create
+     * @param auths the read auths for the graph to be created
+     * @param description of the graph to create
+     * @return the JSON of the schema created and a summary of edge types and counts loaded
+     * @throws IOException
+     * @throws OperationException
+     */
     public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId, String auths, String description) throws IOException, OperationException {
 
-        ProxyGraphManager proxyGraphManager = new ProxyGraphManager();
         Graph graph = proxyGraphManager.getExistingGraph("");
         operationExecuter = new OperationExecuter(graph, user);
 
-        GraphData graphData = convertGraphData(parts);
+        GraphData graphData = GraphDataUtils.convertGraphData(parts);
 
         Schema schema = schemaFactory.createSchema(graphData.getEdgeTypes());
 
         operationExecuter.addGraph(graphId, schema, auths);
 
-        LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
-
-        CreateElementsResponse createElementsResponse = quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile(), description);
+        CreateElementsResponse createElementsResponse = quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), DELIMITER, graphData.isSimpleFile(), description);
 
         operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 
@@ -115,26 +69,38 @@ public class SchemaService {
 
         boolean success = createElementsResponse.getEdgeCount() > 0;
 
-        return new CreateSchemaResponse(createdSchema, success, createElementsResponse.getEdgeCount(), createElementsResponse.getRejectedEdgeLoadCount(), createElementsResponse.getEdgeTypes(), createElementsResponse.getNewEdgeGroupCount(), createElementsResponse.getNewEdgeTypes());
-
+        return new CreateSchemaResponse(
+                createdSchema,
+                success,
+                createElementsResponse.getEdgeCount(),
+                createElementsResponse.getRejectedEdgeLoadCount(),
+                createElementsResponse.getEdgeTypes(),
+                createElementsResponse.getNewEdgeGroupCount(),
+                createElementsResponse.getNewEdgeTypes()
+        );
     }
 
+    /**
+     *
+     * @param parts containing the file data to be loaded into the graph from the multipart/form-data POST request
+     * @param graphId id of the graph to load data into
+     * @return a summary of edge types and counts loaded
+     * @throws IOException
+     * @throws OperationException
+     */
     public CreateSchemaResponse loadData(Collection<Part> parts, String graphId) throws IOException, OperationException {
 
         LOGGER.info("Loading data into {}", graphId);
 
-        ProxyGraphManager proxyGraphManager = new ProxyGraphManager();
         Graph graph = proxyGraphManager.getExistingGraph(graphId);
         operationExecuter = new OperationExecuter(graph, user);
 
-        GraphData graphData = convertGraphData(parts);
+        GraphData graphData = GraphDataUtils.convertGraphData(parts);
 
         Schema schema = operationExecuter.getSchema(graphId);
         Set<String> currentEdgeGroups = schema.getEdgeGroups();
 
-        LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
-
-        CreateElementsResponse createElementsResponse = quickStartElementFactory.addElements(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile(), currentEdgeGroups);
+        CreateElementsResponse createElementsResponse = quickStartElementFactory.addElements(graphData.getEdges(), DELIMITER, graphData.isSimpleFile(), currentEdgeGroups);
 
         operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 
@@ -144,7 +110,14 @@ public class SchemaService {
 
         boolean success = createElementsResponse.getEdgeCount() > 0;
 
-        return new CreateSchemaResponse(createdSchema, success, createElementsResponse.getEdgeCount(), createElementsResponse.getRejectedEdgeLoadCount(), createElementsResponse.getEdgeTypes(), createElementsResponse.getNewEdgeGroupCount(), createElementsResponse.getNewEdgeTypes());
-
+        return new CreateSchemaResponse(
+                createdSchema,
+                success,
+                createElementsResponse.getEdgeCount(),
+                createElementsResponse.getRejectedEdgeLoadCount(),
+                createElementsResponse.getEdgeTypes(),
+                createElementsResponse.getNewEdgeGroupCount(),
+                createElementsResponse.getNewEdgeTypes()
+        );
     }
 }
