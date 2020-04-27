@@ -31,11 +31,12 @@ public class LoadCsvResource extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String schemaName = request.getParameter("name");
+        String description = request.getParameter("desc");
         String auths = request.getParameter("auths");
         LOGGER.info("Received request to create schema {} with auths {} ", schemaName, auths);
         CreateSchemaResponse createSchemaResponse = null;
         try {
-            createSchemaResponse = schemaService.createSchemaFromData(request.getParts(), schemaName, auths);
+            createSchemaResponse = schemaService.createSchemaFromData(request.getParts(), schemaName, auths, description);
         } catch (OperationException e) {
             e.printStackTrace();
         }

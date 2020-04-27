@@ -18,7 +18,7 @@ public class EgeUtils {
 
         String category = "";
 
-        if (type.toLowerCase().contains("alternative")) {
+        if (type.toLowerCase().contains("alternative") || type.toLowerCase().contains("alias") || type.toLowerCase().contains("aka")) {
             category = " #alternative";
         } else if (type.toLowerCase().startsWith("comm")) {
             category = " #communication";

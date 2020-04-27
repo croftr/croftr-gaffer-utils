@@ -1,6 +1,5 @@
 package uk.gov.gchq.gaffer.utils.upload.load;
 
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.data.element.Element;
@@ -21,13 +20,14 @@ public class GraphStatsManager {
         edgeCountsVertex.setValue("graphInfoVertex");
     }
 
-    public Element setCreatedGraphStats() {
+    public Element setCreatedGraphStats(String description) {
 
         Entity edgeGroupCounts = new Entity.Builder()
                 .group("graphCreation")
                 .vertex(edgeCountsVertex)
                 .property("createdDate", new Date())
                 .property("createdBy", "Rob Croft")
+                .property("description", description)
                 .build();
 
         LOGGER.info("created entity for new graph {} ", edgeGroupCounts.getGroup() );

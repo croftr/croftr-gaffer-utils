@@ -120,6 +120,8 @@ public class SchemaFactory {
         types.put("date.created", createdDate);
         TypeDefinition createdBy = createSchemaType(String.class, null);
         types.put("user.created", createdBy);
+        TypeDefinition description = createSchemaType(String.class, null);
+        types.put("graph.description", description);
 
         edgeTypes.forEach(edgeType -> {
             SchemaEdgeDefinition schemaEdgeDefinition = createSchemaEdge("node", "node", EgeUtils.getDescription(edgeType));
@@ -136,6 +138,7 @@ public class SchemaFactory {
         Map<String, String> createdProperties = new HashMap<>();
         createdProperties.put("createdDate", "date.created");
         createdProperties.put("createdBy", "user.created");
+        createdProperties.put("description", "graph.description");
         SchemaEntityDefinition graphCreatedEntity = createSchemaEntity(createdProperties);
         entities.put("graphCreation", graphCreatedEntity);
 

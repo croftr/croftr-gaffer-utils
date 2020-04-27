@@ -77,7 +77,7 @@ public class QuickStartElementFactory {
         edgeTypes.add(edgeArray[EDGE_TYPE]);
     }
 
-    public CreateElementsResponse createEdgesAndEntities(List<String> stringEdges, String delimiter, boolean simpleFile) {
+    public CreateElementsResponse createEdgesAndEntities(List<String> stringEdges, String delimiter, boolean simpleFile, String description) {
 
         List<Element> elements = new ArrayList<>();
         Set<String> edgeTypes = new HashSet<>();
@@ -111,7 +111,7 @@ public class QuickStartElementFactory {
             }
         }
 
-        elements.add(graphStatsManager.setCreatedGraphStats());
+        elements.add(graphStatsManager.setCreatedGraphStats(description));
         elements.add(graphStatsManager.updateGraphStats(freqMap));
 
         LOGGER.info("Successfully loaded {} elements ", elements.size());

@@ -91,7 +91,7 @@ public class SchemaService {
 
     }
 
-    public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId, String auths) throws IOException, OperationException {
+    public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId, String auths, String description) throws IOException, OperationException {
 
         ProxyGraphManager proxyGraphManager = new ProxyGraphManager();
         Graph graph = proxyGraphManager.getExistingGraph("");
@@ -105,7 +105,7 @@ public class SchemaService {
 
         LoadInput loadInput = new LoadInput(",", "example/federated-demo/scripts/data/uploadData.csv", "whatever");
 
-        CreateElementsResponse createElementsResponse = quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile());
+        CreateElementsResponse createElementsResponse = quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), loadInput.getDelimter(), graphData.isSimpleFile(), description);
 
         operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 
