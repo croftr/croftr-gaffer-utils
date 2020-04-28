@@ -93,7 +93,6 @@ public class QuickStartElementFactory {
                 String[] edgeArray = stringEdge.split(delimiter);
 
                 String edgeType = simpleFile ? DEFAULT_EDGE_TYPE : edgeArray[EDGE_TYPE];
-                freqMap.upsert(edgeType, 1l);
 
                 if (edgeArray.length < 2) {
                     continue;
@@ -104,6 +103,8 @@ public class QuickStartElementFactory {
                 } else {
                     mapDetailEdge(edgeArray, elements, edgeTypes);
                 }
+
+                freqMap.upsert(edgeType, 1l);
                 edgeCounts++;
 
             } catch (Exception e) {
@@ -156,7 +157,6 @@ public class QuickStartElementFactory {
                 }
 
                 freqMap.upsert(edgeType, 1l);
-
                 edgeCounts++;
 
             } catch (Exception e) {
