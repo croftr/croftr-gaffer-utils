@@ -23,8 +23,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 /**
- * Create the Element types, Edge types and Entity types for the base
- * schema create on CSV upload
+ * Create the Element types, Edge types and Entity types for the schema
  */
 public class SchemaDefinitionFactory {
 

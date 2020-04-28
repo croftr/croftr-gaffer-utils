@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
-import static uk.gov.gchq.gaffer.utils.upload.CsvMapper.DEFAULT_EDGE_TYPE;
-import static uk.gov.gchq.gaffer.utils.upload.CsvMapper.EDGE_TYPE;
+import static uk.gov.gchq.gaffer.utils.upload.DelimiterMapper.DEFAULT_EDGE_TYPE;
+import static uk.gov.gchq.gaffer.utils.upload.DelimiterMapper.EDGE_TYPE;
 
 /**
  * Convert the file data into a more generic java object for processing
@@ -31,10 +31,10 @@ public class GraphDataUtils {
             }
         }
 
-        return "default.csv";
+        return "default.txt";
     }
 
-    public static GraphData convertGraphData(Collection<Part> parts) throws IOException {
+    public static GraphData convertGraphData(Collection<Part> parts, String delimiter) throws IOException {
 
         String fileName = null;
         boolean isSimpleFile = false;
@@ -52,11 +52,11 @@ public class GraphDataUtils {
             BufferedReader reader = new BufferedReader(isReader);
 
             String firstLine = reader.readLine();
-            String[] firstLineArray = firstLine.split(",");
+            String[] firstLineArray = firstLine.split(delimiter);
             if (firstLineArray.length == SIMPLE_FILE_COLUMN_COUNT) {
                 isSimpleFile = true;
             } else if (firstLineArray.length != DETAIL_FILE_COLUMN_COUNT) {
-                throw new SchemaException("CSV files must contain either " + SIMPLE_FILE_COLUMN_COUNT + " or " + DETAIL_FILE_COLUMN_COUNT + " columns");
+                throw new SchemaException("Files must contain either " + SIMPLE_FILE_COLUMN_COUNT + " or " + DETAIL_FILE_COLUMN_COUNT + " columns");
             }
 
             String str;

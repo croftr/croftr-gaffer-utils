@@ -17,9 +17,9 @@ import java.io.*;
 @MultipartConfig(fileSizeThreshold = 1024 * 1024,
         maxFileSize = 1024 * 1024 * 5,
         maxRequestSize = 1024 * 1024 * 5 * 5)
-public class CreateSchemaFromCsvResource extends HttpServlet {
+public class CreateSchemaFromFileResource extends HttpServlet {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaFromCsvResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaFromFileResource.class);
 
     private SchemaService schemaService;
 
@@ -29,15 +29,30 @@ public class CreateSchemaFromCsvResource extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
         String schemaName = request.getParameter("name");
         String description = request.getParameter("desc");
+        String delimiterParam = request.getParameter("del");
         String auths = request.getParameter("auths");
+
+        String delimiter = ",";
+        switch (delimiterParam) {
+            case "comma" :
+                delimiter = ",";
+                break;
+            case "space" :
+                delimiter = " ";
+                break;
+            case "tab" :
+                delimiter = "\t";
+        }
+
         LOGGER.info("Received request to create schema {} with auths {} ", schemaName, auths);
         CreateSchemaResponse createSchemaResponse = null;
         try {
-            createSchemaResponse = schemaService.createSchemaFromData(request.getParts(), schemaName, auths, description);
+            createSchemaResponse = schemaService.createSchemaFromData(request.getParts(), schemaName, auths, description, delimiter);
         } catch (OperationException e) {
-            LOGGER.error("Error creating graph from CSV file ", e);
+            LOGGER.error("Error creating graph from file ", e);
         }
 
         response.setContentType("application/json");

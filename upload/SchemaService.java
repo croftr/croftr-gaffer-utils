@@ -16,14 +16,11 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Entry point for creating a schema from a csv file
- * or loading data into an existing schema from a csv file
+ * Entry point for creating a schema or loading data into a schame from a file
  */
 public class SchemaService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaService.class);
-
-    private static final String DELIMITER = ",";
 
     private SchemaDefinitionFactory schemaFactory;
     private OperationExecuter operationExecuter;
@@ -48,19 +45,19 @@ public class SchemaService {
      * @throws IOException
      * @throws OperationException
      */
-    public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId, String auths, String description) throws IOException, OperationException {
+    public CreateSchemaResponse createSchemaFromData(Collection<Part> parts, String graphId, String auths, String description, String delimiter) throws IOException, OperationException {
 
         Graph graph = proxyGraphManager.getExistingGraph("");
         operationExecuter = new OperationExecuter(graph, user);
 
-        GraphData graphData = GraphDataUtils.convertGraphData(parts);
+        GraphData graphData = GraphDataUtils.convertGraphData(parts, delimiter);
 
         Schema schema = schemaFactory.createSchema(graphData.getEdgeTypes());
 
         operationExecuter.addGraph(graphId, schema, auths);
 
         CreateElementsResponse createElementsResponse =
-                quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), DELIMITER, graphData.isSimpleFile(), description, user);
+                quickStartElementFactory.createEdgesAndEntities(graphData.getEdges(), delimiter, graphData.isSimpleFile(), description, user);
 
         operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 
@@ -89,19 +86,19 @@ public class SchemaService {
      * @throws IOException
      * @throws OperationException
      */
-    public CreateSchemaResponse loadData(Collection<Part> parts, String graphId) throws IOException, OperationException {
+    public CreateSchemaResponse loadData(Collection<Part> parts, String graphId, String delimiter) throws IOException, OperationException {
 
         LOGGER.info("Loading data into {}", graphId);
 
         Graph graph = proxyGraphManager.getExistingGraph(graphId);
         operationExecuter = new OperationExecuter(graph, user);
 
-        GraphData graphData = GraphDataUtils.convertGraphData(parts);
+        GraphData graphData = GraphDataUtils.convertGraphData(parts, delimiter);
 
         Schema schema = operationExecuter.getSchema(graphId);
         Set<String> currentEdgeGroups = schema.getEdgeGroups();
 
-        CreateElementsResponse createElementsResponse = quickStartElementFactory.addElements(graphData.getEdges(), DELIMITER, graphData.isSimpleFile(), currentEdgeGroups);
+        CreateElementsResponse createElementsResponse = quickStartElementFactory.addElements(graphData.getEdges(), delimiter, graphData.isSimpleFile(), currentEdgeGroups);
 
         operationExecuter.addElements(createElementsResponse.getElements(), graphId);
 

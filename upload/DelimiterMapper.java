@@ -1,6 +1,6 @@
 package uk.gov.gchq.gaffer.utils.upload;
 
-public class CsvMapper {
+public class DelimiterMapper {
 
     public static final int SIMPLE_FROM_NODE_VALUE = 0;
     public static final int SIMPLE_TO_NODE_VALUE = 1;

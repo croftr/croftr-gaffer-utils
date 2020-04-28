@@ -12,7 +12,7 @@ import uk.gov.gchq.gaffer.utils.upload.domain.CreateElementsResponse;
 
 import java.util.*;
 
-import static uk.gov.gchq.gaffer.utils.upload.CsvMapper.*;
+import static uk.gov.gchq.gaffer.utils.upload.DelimiterMapper.*;
 
 public class QuickStartElementFactory {
 

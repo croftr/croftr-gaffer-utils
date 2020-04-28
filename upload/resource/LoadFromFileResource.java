@@ -18,9 +18,9 @@ import java.io.PrintWriter;
 @MultipartConfig(fileSizeThreshold = 1024 * 1024,
         maxFileSize = 1024 * 1024 * 5,
         maxRequestSize = 1024 * 1024 * 5 * 5)
-public class LoadCsvDataResource extends HttpServlet {
+public class LoadFromFileResource extends HttpServlet {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoadCsvDataResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoadFromFileResource.class);
 
     private SchemaService schemaService;
 
@@ -32,9 +32,23 @@ public class LoadCsvDataResource extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         String schemaName = request.getParameter("name");
+        String delimiterParam = request.getParameter("del");
         CreateSchemaResponse createSchemaResponse = null;
+
+        String delimiter = ",";
+        switch (delimiterParam) {
+            case "comma" :
+                delimiter = ",";
+                break;
+            case "space" :
+                delimiter = " ";
+                break;
+            case "tab" :
+                delimiter = "\t";
+        }
+
         try {
-            createSchemaResponse = schemaService.loadData(request.getParts(), schemaName);
+            createSchemaResponse = schemaService.loadData(request.getParts(), schemaName, delimiter);
         } catch (OperationException e) {
             LOGGER.error("Error loading data into graph ", e);
         }
