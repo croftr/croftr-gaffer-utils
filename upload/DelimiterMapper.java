@@ -2,6 +2,31 @@ package uk.gov.gchq.gaffer.utils.upload;
 
 public class DelimiterMapper {
 
+    /*
+     * @param delimiterDescription the delimiter described
+     * @return the actual delimter to use
+     */
+    public static String delimiterType(String delimiterDescription) {
+
+        String delimiter;
+
+        switch (delimiterDescription) {
+            case "comma" :
+                delimiter = ",";
+                break;
+            case "space" :
+                delimiter = " ";
+                break;
+            case "tab" :
+                delimiter = "\t";
+            default:
+                delimiter = ",";
+        }
+
+        return delimiter;
+    }
+
+
     public static final int SIMPLE_FROM_NODE_VALUE = 0;
     public static final int SIMPLE_TO_NODE_VALUE = 1;
 

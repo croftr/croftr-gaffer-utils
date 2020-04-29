@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.gchq.gaffer.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.gaffer.operation.OperationException;
+import uk.gov.gchq.gaffer.utils.upload.DelimiterMapper;
 import uk.gov.gchq.gaffer.utils.upload.SchemaService;
 import uk.gov.gchq.gaffer.utils.upload.domain.CreateSchemaResponse;
 
@@ -35,17 +36,8 @@ public class LoadFromFileResource extends HttpServlet {
         String delimiterParam = request.getParameter("del");
         CreateSchemaResponse createSchemaResponse = null;
 
-        String delimiter = ",";
-        switch (delimiterParam) {
-            case "comma" :
-                delimiter = ",";
-                break;
-            case "space" :
-                delimiter = " ";
-                break;
-            case "tab" :
-                delimiter = "\t";
-        }
+        //get the actual delimiter to use from the delimiter description
+        String delimiter = DelimiterMapper.delimiterType(delimiterParam);
 
         try {
             createSchemaResponse = schemaService.loadData(request.getParts(), schemaName, delimiter);
