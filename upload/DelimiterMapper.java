@@ -19,6 +19,7 @@ public class DelimiterMapper {
                 break;
             case "tab" :
                 delimiter = "\t";
+                break;
             default:
                 delimiter = ",";
         }
