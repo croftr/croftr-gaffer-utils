@@ -29,11 +29,19 @@ public class SchemaService {
     private User user;
 
     public SchemaService() {
-        user = new User("Bobby Croft");
+        final List<String> opAuths = Arrays.asList("Auth1","Auth2"); // authorisations for running different Gaffer operations
+        final List<String> dataAuths = Arrays.asList("Auth1","Auth2"); // authorisations for accessing data
+        user =  new User.Builder()
+                .userId("Rob")
+                .opAuths(opAuths)
+                .dataAuths(dataAuths)
+                .build();
+
         schemaFactory = new SchemaDefinitionFactory();
         proxyGraphManager = new ProxyGraphManager();
         quickStartElementFactory = new QuickStartElementFactory();
     }
+
 
     /**
      *

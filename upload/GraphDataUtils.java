@@ -61,7 +61,7 @@ public class GraphDataUtils {
 
             String str;
             while ((str = reader.readLine()) != null) {
-                String[] edgeArray = str.split(",");
+                String[] edgeArray = str.split(delimiter);
                 String edgeType = isSimpleFile ? DEFAULT_EDGE_TYPE : edgeArray[EDGE_TYPE];
                 edgeTypes.add(edgeType);
                 edges.add(str);
