@@ -1,23 +1,38 @@
 package uk.gov.gchq.gaffer.utils.keylines;
 
-import java.util.Collections;
 import java.util.Map;
 
-public class KeylinesNode {
+public class KeylinesNode extends KeylinesObject {
 
     private final String type = "node";
+
     private String id;
     private String t;
+    private String nodeType;
+    private String nodeSubType;
     private Map<String, Object> d;
 
-    public KeylinesNode(String id, String t, Map<String, Object> d) {
-        this.id = id;
+    public KeylinesNode(String nodeType, String nodeSubType, String t) {
         this.t = t;
-        this.d = d;
+        this.nodeType = nodeType;
+        this.nodeSubType = nodeSubType;
+        this.id = nodeType+"|"+nodeSubType+"|"+t;
     }
 
-    public KeylinesNode(String id, String t) {
-        this(id, t, Collections.emptyMap());
+    public String getNodeType() {
+        return nodeType;
+    }
+
+    public void setNodeType(String nodeType) {
+        this.nodeType = nodeType;
+    }
+
+    public String getNodeSubType() {
+        return nodeSubType;
+    }
+
+    public void setNodeSubType(String nodeSubType) {
+        this.nodeSubType = nodeSubType;
     }
 
     public String getId() {

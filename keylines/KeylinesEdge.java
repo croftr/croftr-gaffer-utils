@@ -1,39 +1,20 @@
 package uk.gov.gchq.gaffer.utils.keylines;
 
 import java.util.Map;
+import java.util.UUID;
 
-/**
- * function makeNode(name, type) {
- *   return {
- *     id: name,
- *     type: 'node',
- *     t: name,
- *     d: { type: type }
- *   };
- * }
- * function makeLink(actor, movie) {
- *   return {
- *     id: actor + '-' + movie,
- *     type: 'link',
- *     id1: actor,
- *     id2: movie,
- *     c: colour,
- *   };
- * }
- */
+public class KeylinesEdge extends KeylinesObject {
 
-public class KeylinesEdge {
-
-    private String id;
     private String type = "link";
+    private String id;
     private String category;
-    private KeylinesNode id1;
-    private KeylinesNode id2;
+    private String id1;
+    private String id2;
     private boolean isDirected;
-    private Map<String, Object> d;
+    private Map<java.lang.String, Object> d;
 
-    public KeylinesEdge(String category, KeylinesNode id1, KeylinesNode id2, boolean isDirected, Map<String, Object> d) {
-        this.id = id1.getId() + "-" + id2.getId();
+    public KeylinesEdge(String category, String id1, String id2, boolean isDirected, Map<String, Object> d) {
+        this.id = UUID.randomUUID().toString();
         this.category = category;
         this.id1 = id1;
         this.id2 = id2;
@@ -49,11 +30,11 @@ public class KeylinesEdge {
         this.category = category;
     }
 
-    public String getId() {
+    public java.lang.String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(java.lang.String id) {
         this.id = id;
     }
 
@@ -65,19 +46,19 @@ public class KeylinesEdge {
         this.type = type;
     }
 
-    public KeylinesNode getId1() {
+    public String getId1() {
         return id1;
     }
 
-    public void setId1(KeylinesNode id1) {
+    public void setId1(String id1) {
         this.id1 = id1;
     }
 
-    public KeylinesNode getId2() {
+    public String getId2() {
         return id2;
     }
 
-    public void setId2(KeylinesNode id2) {
+    public void setId2(String id2) {
         this.id2 = id2;
     }
 
@@ -89,11 +70,11 @@ public class KeylinesEdge {
         isDirected = directed;
     }
 
-    public Map<String, Object> getD() {
+    public Map<java.lang.String, Object> getD() {
         return d;
     }
 
-    public void setD(Map<String, Object> d) {
+    public void setD(Map<java.lang.String, Object> d) {
         this.d = d;
     }
 

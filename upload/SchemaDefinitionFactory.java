@@ -128,6 +128,12 @@ public class SchemaDefinitionFactory {
         TypeDefinition hyperloglogplus = createSchemaType(HyperLogLogPlus.class, null);
         types.put("hyperloglogplus", hyperloglogplus);
 
+        TypeDefinition.Builder builder = new TypeDefinition.Builder();
+        TypeDefinition visibilityType = builder.clazz(String.class).build();
+        builder.aggregateFunction(new Last());
+        builder.validateFunctions(new Exists());
+        types.put("visibility", visibilityType);
+
         //graph stats
         TypeDefinition edgeGroupCounts = createSchemaType(FreqMap.class, new Exists());
         types.put("counts.freqmap", edgeGroupCounts);
